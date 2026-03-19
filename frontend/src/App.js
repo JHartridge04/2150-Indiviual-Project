@@ -1,0 +1,59 @@
+/**
+ * App.js
+ * Root component — sets up routing and the AuthProvider context.
+ *
+ * Route map:
+ *   /           → Home (upload + style profile) — protected
+ *   /recommendations → Recommendations page — protected
+ *   /login      → Login page
+ *   /signup     → Signup page
+ *   /logout     → Logout (effect-only component)
+ *   *           → Redirect to /
+ */
+
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Logout from "./pages/Logout";
+import Recommendations from "./pages/Recommendations";
+import "./App.css";
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/logout" element={<Logout />} />
+
+          {/* Protected routes */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recommendations"
+            element={
+              <ProtectedRoute>
+                <Recommendations />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
