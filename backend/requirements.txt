@@ -4,5 +4,5 @@ supabase==2.4.6
 anthropic==0.28.0
 python-dotenv==1.0.1
 requests==2.32.3
-Pillow==10.3.0
+Pillow==12.1.1
 gunicorn==22.0.0
