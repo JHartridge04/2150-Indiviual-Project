@@ -113,14 +113,6 @@ def _safe_image_url(url: str):
     return safe_url, None
 
 
-
-    """Return (token, error_response) tuple. error_response is None when valid."""
-    token = _auth_header()
-    if not token:
-        return None, (jsonify({"error": "Missing or invalid Authorization header"}), 401)
-    return token, None
-
-
 # ---------------------------------------------------------------------------
 # Auth endpoints
 # ---------------------------------------------------------------------------
