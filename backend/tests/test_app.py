@@ -186,3 +186,248 @@ def test_recommendations_default_when_no_tags(client):
     body = resp.get_json()
     # Should fall back to default recommendations
     assert len(body["recommendations"]) > 0
+
+
+# ---------------------------------------------------------------------------
+# Auth — logout
+# ---------------------------------------------------------------------------
+
+def test_logout_requires_auth(client):
+    c, *_ = client
+    resp = c.post("/api/auth/logout")
+    assert resp.status_code == 401
+
+
+def test_logout_success(client):
+    c, mock_supabase, _ = client
+
+    resp = c.post(
+        "/api/auth/logout",
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body["message"] == "Logged out successfully"
+
+
+# ---------------------------------------------------------------------------
+# Auth — login returns session token
+# ---------------------------------------------------------------------------
+
+def test_login_returns_session_token(client):
+    c, mock_supabase, _ = client
+
+    mock_user = MagicMock()
+    mock_user.model_dump.return_value = {"id": "user-123", "email": "test@example.com"}
+    mock_session = MagicMock()
+    mock_session.model_dump.return_value = {
+        "access_token": "valid-token-abc",
+        "token_type": "bearer",
+    }
+    mock_supabase.auth.sign_in_with_password.return_value = MagicMock(
+        user=mock_user, session=mock_session
+    )
+
+    resp = c.post(
+        "/api/auth/login",
+        json={"email": "test@example.com", "password": "password123"},
+    )
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body["session"]["access_token"] == "valid-token-abc"
+    assert body["user"] is not None
+
+
+# ---------------------------------------------------------------------------
+# Upload — with file
+# ---------------------------------------------------------------------------
+
+def test_upload_success(client):
+    c, mock_supabase, _ = client
+    import io
+
+    # Mock get_user for token validation
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    # Mock storage upload and public URL
+    mock_supabase.storage.from_.return_value.upload.return_value = None
+    mock_supabase.storage.from_.return_value.get_public_url.return_value = (
+        "https://fake.supabase.co/storage/v1/object/public/outfit-photos/user-123/test.jpg"
+    )
+
+    data = {"file": (io.BytesIO(b"fake-image-bytes"), "test.jpg", "image/jpeg")}
+    resp = c.post(
+        "/api/upload",
+        data=data,
+        content_type="multipart/form-data",
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 201
+    body = resp.get_json()
+    assert "url" in body
+    assert "path" in body
+
+
+def test_upload_rejects_non_image(client):
+    c, mock_supabase, _ = client
+    import io
+
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    data = {"file": (io.BytesIO(b"not-an-image"), "test.txt", "text/plain")}
+    resp = c.post(
+        "/api/upload",
+        data=data,
+        content_type="multipart/form-data",
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 415
+
+
+def test_upload_no_file(client):
+    c, *_ = client
+    resp = c.post(
+        "/api/upload",
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 400
+
+
+# ---------------------------------------------------------------------------
+# Style analysis — Claude API
+# ---------------------------------------------------------------------------
+
+def test_analyze_requires_auth(client):
+    c, *_ = client
+    resp = c.post("/api/analyze", json={"image_url": "https://example.com/img.jpg"})
+    assert resp.status_code == 401
+
+
+def test_analyze_returns_structured_data(client):
+    c, mock_supabase, mock_anthropic = client
+
+    # Mock Claude response with structured JSON
+    claude_response = MagicMock()
+    claude_response.content = [MagicMock()]
+    claude_response.content[0].text = json.dumps({
+        "colors": ["navy", "white"],
+        "silhouettes": ["slim-fit", "tapered"],
+        "style_tags": ["casual", "minimalist"],
+        "summary": "A clean, understated look with navy and white tones."
+    })
+    mock_anthropic.messages.create.return_value = claude_response
+
+    # We need to patch the anthropic_client in the app module
+    import sys
+    flask_app = sys.modules["app"]
+    flask_app.anthropic_client = mock_anthropic
+
+    # Mock the image fetch (since analyze fetches image bytes from URL)
+    mock_img_response = MagicMock()
+    mock_img_response.content = b"fake-image-bytes"
+    mock_img_response.headers = {"Content-Type": "image/jpeg"}
+    mock_img_response.raise_for_status.return_value = None
+
+    with patch.object(flask_app.req_lib, "get", return_value=mock_img_response):
+        resp = c.post(
+            "/api/analyze",
+            json={"image_url": "https://fake.supabase.co/storage/v1/object/public/img.jpg"},
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert "colors" in body
+    assert "silhouettes" in body
+    assert "style_tags" in body
+    assert "summary" in body
+    assert len(body["colors"]) == 2
+    assert "casual" in body["style_tags"]
+
+
+def test_analyze_handles_claude_error(client):
+    c, mock_supabase, mock_anthropic = client
+    import anthropic as anthropic_mod
+
+    # Make Claude raise an API error
+    import sys
+    flask_app = sys.modules["app"]
+    flask_app.anthropic_client = mock_anthropic
+    mock_anthropic.messages.create.side_effect = anthropic_mod.APIError(
+        message="Rate limited",
+        request=MagicMock(),
+        body=None,
+    )
+
+    mock_img_response = MagicMock()
+    mock_img_response.content = b"fake-image-bytes"
+    mock_img_response.headers = {"Content-Type": "image/jpeg"}
+    mock_img_response.raise_for_status.return_value = None
+
+    with patch.object(flask_app.req_lib, "get", return_value=mock_img_response):
+        resp = c.post(
+            "/api/analyze",
+            json={"image_url": "https://fake.supabase.co/storage/v1/object/public/img.jpg"},
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 502
+    body = resp.get_json()
+    assert "error" in body
+
+
+def test_analyze_rejects_non_supabase_url(client):
+    c, *_ = client
+
+    resp = c.post(
+        "/api/analyze",
+        json={"image_url": "https://evil.com/steal-data"},
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 400
+    body = resp.get_json()
+    assert "error" in body
+
+
+# ---------------------------------------------------------------------------
+# Recommendations — item structure
+# ---------------------------------------------------------------------------
+
+def test_recommendations_item_structure(client):
+    c, mock_supabase, _ = client
+
+    resp = c.post(
+        "/api/recommendations",
+        json={"style_tags": ["formal"]},
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 200
+    body = resp.get_json()
+    items = body["recommendations"]
+    assert len(items) > 0
+    # Each item must have name, image, price, and link
+    for item in items:
+        assert "name" in item
+        assert "image" in item
+        assert "price" in item
+        assert "link" in item
+        assert item["link"].startswith("https://")
+
+
+def test_recommendations_multiple_tags_deduplicates(client):
+    c, mock_supabase, _ = client
+
+    resp = c.post(
+        "/api/recommendations",
+        json={"style_tags": ["casual", "casual"]},
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 200
+    body = resp.get_json()
+    names = [item["name"] for item in body["recommendations"]]
+    # No duplicate names
+    assert len(names) == len(set(names))
