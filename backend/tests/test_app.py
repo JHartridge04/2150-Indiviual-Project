@@ -431,3 +431,90 @@ def test_recommendations_multiple_tags_deduplicates(client):
     names = [item["name"] for item in body["recommendations"]]
     # No duplicate names
     assert len(names) == len(set(names))
+
+
+# ---------------------------------------------------------------------------
+# Email validation
+# ---------------------------------------------------------------------------
+
+def test_signup_rejects_invalid_email(client):
+    c, *_ = client
+    resp = c.post(
+        "/api/auth/signup",
+        json={"email": "not-an-email", "password": "password123"},
+    )
+    assert resp.status_code == 400
+    assert "error" in resp.get_json()
+
+
+def test_login_rejects_invalid_email(client):
+    c, *_ = client
+    resp = c.post(
+        "/api/auth/login",
+        json={"email": "bad@@email", "password": "password123"},
+    )
+    assert resp.status_code == 400
+    assert "error" in resp.get_json()
+
+
+# ---------------------------------------------------------------------------
+# File size limit on upload
+# ---------------------------------------------------------------------------
+
+def test_upload_rejects_oversized_file(client):
+    c, mock_supabase, _ = client
+    import io
+
+    # Mock get_user for token validation
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    # Create a fake file just over the 10 MB limit
+    oversized_bytes = b"x" * (10 * 1024 * 1024 + 1)
+    data = {"file": (io.BytesIO(oversized_bytes), "big.jpg", "image/jpeg")}
+    resp = c.post(
+        "/api/upload",
+        data=data,
+        content_type="multipart/form-data",
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 413
+    assert "error" in resp.get_json()
+
+
+# ---------------------------------------------------------------------------
+# Security headers
+# ---------------------------------------------------------------------------
+
+def test_security_headers_present(client):
+    c, *_ = client
+    resp = c.get("/api/health")
+    assert resp.headers.get("X-Content-Type-Options") == "nosniff"
+    assert resp.headers.get("X-Frame-Options") == "DENY"
+    assert resp.headers.get("Referrer-Policy") == "strict-origin-when-cross-origin"
+
+
+# ---------------------------------------------------------------------------
+# Analyze — oversized remote image
+# ---------------------------------------------------------------------------
+
+def test_analyze_rejects_oversized_remote_image(client):
+    c, mock_supabase, mock_anthropic = client
+    import sys
+    flask_app = sys.modules["app"]
+
+    # Mock a remote image response that reports a large Content-Length
+    mock_img_response = MagicMock()
+    mock_img_response.headers = {"Content-Length": str(10 * 1024 * 1024 + 1), "Content-Type": "image/jpeg"}
+    mock_img_response.raise_for_status.return_value = None
+
+    with patch.object(flask_app.req_lib, "get", return_value=mock_img_response):
+        resp = c.post(
+            "/api/analyze",
+            json={"image_url": "https://fake.supabase.co/storage/v1/object/public/img.jpg"},
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 413
+    assert "error" in resp.get_json()

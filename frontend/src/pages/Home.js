@@ -38,6 +38,12 @@ export default function Home() {
       return;
     }
 
+    // Client-side size guard (10 MB)
+    if (selected.size > 10 * 1024 * 1024) {
+      setError("File is too large. Please choose an image under 10 MB.");
+      return;
+    }
+
     setFile(selected);
     setError("");
     setProfile(null);
