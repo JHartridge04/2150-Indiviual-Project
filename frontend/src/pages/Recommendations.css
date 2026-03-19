@@ -1,0 +1,72 @@
+/* Recommendations.css */
+
+.rec-container {
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+/* Reuse home-header styles defined in Home.css (loaded via App.css) */
+.rec-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.rec-header-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.rec-header-row h2 {
+  font-size: 1.3rem;
+  color: #111827;
+  margin: 0;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.style-tag {
+  background: #ede9fe;
+  color: #5b21b6;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.no-items {
+  color: #6b7280;
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.loading-spinner {
+  text-align: center;
+  color: #7c3aed;
+  padding: 3rem;
+  font-size: 1rem;
+}
+
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
