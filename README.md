@@ -89,6 +89,41 @@ Authenticated endpoints require `Authorization: Bearer <access_token>`.
 
 ---
 
+## Accessing the App
+
+Once both servers are running (see **Setup** above), open your browser:
+
+| What you want to do | URL |
+|---|---|
+| Create a new account | <http://localhost:3000/signup> |
+| Log in to an existing account | <http://localhost:3000/login> |
+| Upload an outfit & get AI feedback | <http://localhost:3000/> *(redirects to login if not signed in)* |
+| View clothing recommendations | <http://localhost:3000/recommendations> *(protected)* |
+| Backend health check | <http://localhost:5000/api/health> |
+
+> **Start-up order:** always start the **backend** (`flask run`) before the **frontend** (`npm start`). The frontend will still start if the backend is not running, but any API call (login, upload, analyse) will fail with a network error until the backend is up.
+
+### First-time use (quick-start)
+
+1. Complete the [Setup](#setup) steps above (clone, configure `.env`, install dependencies).
+2. Start the backend in one terminal:
+   ```bash
+   cd backend
+   source venv/bin/activate   # Windows: venv\Scripts\activate
+   flask run
+   ```
+3. Start the frontend in a second terminal:
+   ```bash
+   cd frontend
+   npm start
+   ```
+4. Your browser will open automatically at **<http://localhost:3000>**.  
+   Because all main pages are protected, you will be redirected to the login page.
+5. Click **"Sign up"** (or navigate to `/signup`) to create an account.
+6. After signing up, you will be redirected to the home page where you can upload an outfit photo and receive AI-powered style recommendations.
+
+---
+
 ## Running Tests
 
 ### Backend (pytest)
