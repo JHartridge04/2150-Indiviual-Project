@@ -22,7 +22,6 @@ export default function Recommendations() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [tags] = useState(passedTags);
 
   // -------------------------------------------------------------------------
   // Load recommendations whenever tags change
@@ -32,7 +31,7 @@ export default function Recommendations() {
       setLoading(true);
       setError("");
       try {
-        const data = await getRecommendations(tags, token);
+        const data = await getRecommendations(passedTags, token);
         setItems(data.recommendations || []);
       } catch (err) {
         setError(err.message || "Failed to load recommendations.");
@@ -42,7 +41,11 @@ export default function Recommendations() {
     }
 
     if (token) load();
-  }, [tags, token]);
+  // passedTags falls back to [] if no state is passed, but the stable source
+  // of truth is location.state?.styleTags — use that as the dependency to
+  // avoid a new array reference on every render triggering an infinite loop.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, location.state?.styleTags]);
 
   // -------------------------------------------------------------------------
   // Render
@@ -66,9 +69,9 @@ export default function Recommendations() {
       <main className="rec-main">
         <div className="rec-header-row">
           <h2>Recommendations For You</h2>
-          {tags.length > 0 && (
+          {passedTags.length > 0 && (
             <div className="tag-list">
-              {tags.map((t) => (
+              {passedTags.map((t) => (
                 <span key={t} className="style-tag">
                   {t}
                 </span>

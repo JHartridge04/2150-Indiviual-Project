@@ -4,11 +4,12 @@ Provides RESTful API endpoints for user auth, photo upload,
 AI style analysis via Claude, and style-based recommendations.
 """
 
+import logging
 import os
+import re
 import uuid
 import base64
 import json
-from io import BytesIO
 from urllib.parse import urlparse
 
 import requests as req_lib
@@ -24,6 +25,28 @@ from supabase import create_client, Client
 # ---------------------------------------------------------------------------
 
 load_dotenv()  # Load environment variables from .env
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Validate required environment variables at startup
+# ---------------------------------------------------------------------------
+
+_REQUIRED_ENV_VARS = ("SUPABASE_URL", "SUPABASE_ANON_KEY", "ANTHROPIC_API_KEY")
+_missing = [v for v in _REQUIRED_ENV_VARS if not os.environ.get(v)]
+if _missing:
+    raise EnvironmentError(
+        f"Missing required environment variables: {', '.join(_missing)}. "
+        "Please check your .env file."
+    )
 
 app = Flask(__name__)
 
@@ -46,7 +69,29 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 anthropic_client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 # Storage bucket for outfit photos
-STORAGE_BUCKET = "outfit-photos"
+STORAGE_BUCKET = os.getenv("STORAGE_BUCKET", "outfit-photos")
+
+# Maximum allowed upload size (10 MB)
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+
+# Email format validation regex — basic sanity check (local-part @ domain.tld)
+_EMAIL_RE = re.compile(
+    r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$"
+)
+
+
+
+# ---------------------------------------------------------------------------
+# Security response headers
+# ---------------------------------------------------------------------------
+
+@app.after_request
+def set_security_headers(response):
+    """Attach security-related HTTP headers to every response."""
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -132,13 +177,18 @@ def signup():
     if not email or not password:
         return jsonify({"error": "email and password are required"}), 400
 
+    if not _EMAIL_RE.match(email):
+        return jsonify({"error": "Invalid email format"}), 400
+
     try:
         response = supabase.auth.sign_up({"email": email, "password": password})
+        logger.info("Signup succeeded for %s", email)
         return jsonify({
             "user": response.user.model_dump() if response.user else None,
             "session": response.session.model_dump() if response.session else None,
         }), 201
     except Exception as exc:
+        logger.warning("Signup failed for %s: %s", email, exc)
         return jsonify({"error": str(exc)}), 400
 
 
@@ -157,15 +207,20 @@ def login():
     if not email or not password:
         return jsonify({"error": "email and password are required"}), 400
 
+    if not _EMAIL_RE.match(email):
+        return jsonify({"error": "Invalid email format"}), 400
+
     try:
         response = supabase.auth.sign_in_with_password(
             {"email": email, "password": password}
         )
+        logger.info("Login succeeded for %s", email)
         return jsonify({
             "user": response.user.model_dump() if response.user else None,
             "session": response.session.model_dump() if response.session else None,
         }), 200
     except Exception as exc:
+        logger.warning("Login failed for %s: %s", email, exc)
         return jsonify({"error": str(exc)}), 401
 
 
@@ -231,6 +286,10 @@ def upload_photo():
 
         file_bytes = file.read()
 
+        # Enforce maximum file size
+        if len(file_bytes) > MAX_UPLOAD_BYTES:
+            return jsonify({"error": "File too large (maximum 10 MB)"}), 413
+
         # Upload to Supabase Storage bucket
         supabase.storage.from_(STORAGE_BUCKET).upload(
             path=storage_path,
@@ -241,9 +300,11 @@ def upload_photo():
         # Get a public URL for the uploaded file
         public_url = supabase.storage.from_(STORAGE_BUCKET).get_public_url(storage_path)
 
+        logger.info("Upload succeeded for user %s: %s", user_id, storage_path)
         return jsonify({"path": storage_path, "url": public_url}), 201
 
     except Exception as exc:
+        logger.error("Upload failed: %s", exc)
         return jsonify({"error": str(exc)}), 500
 
 
@@ -289,9 +350,18 @@ def analyze_style():
         try:
             img_resp = req_lib.get(safe_url, timeout=15)
             img_resp.raise_for_status()
+            # Guard against excessively large remote images using the
+            # Content-Length header before loading the full response body.
+            content_length = int(img_resp.headers.get("Content-Length", 0))
+            if content_length > MAX_UPLOAD_BYTES:
+                return jsonify({"error": "Remote image too large (maximum 10 MB)"}), 413
             image_bytes = img_resp.content
+            if len(image_bytes) > MAX_UPLOAD_BYTES:
+                return jsonify({"error": "Remote image too large (maximum 10 MB)"}), 413
             media_type = img_resp.headers.get("Content-Type", "image/jpeg").split(";")[0]
-        except Exception as exc:
+        except req_lib.exceptions.Timeout:
+            return jsonify({"error": "Timed out fetching image"}), 408
+        except req_lib.exceptions.RequestException as exc:
             return jsonify({"error": f"Failed to fetch image: {exc}"}), 400
 
         image_data_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
@@ -350,21 +420,29 @@ def analyze_style():
 
         raw_text = message.content[0].text.strip()
 
-        # Strip any accidental markdown code fences
+        # Strip any accidental markdown code fences (e.g. ```json ... ```)
         if raw_text.startswith("```"):
-            raw_text = raw_text.split("```")[1]
-            if raw_text.startswith("json"):
-                raw_text = raw_text[4:]
+            parts = raw_text.split("```")
+            if len(parts) >= 2:
+                # parts[1] is the content inside the first fence pair
+                inner = parts[1]
+                if inner.startswith("json"):
+                    inner = inner[4:]
+                raw_text = inner.strip()
 
         result = json.loads(raw_text)
+        logger.info("Style analysis completed successfully")
         return jsonify(result), 200
 
     except json.JSONDecodeError:
         # Return the raw text if Claude's response isn't valid JSON
+        logger.warning("Claude returned non-JSON response")
         return jsonify({"raw_response": raw_text, "error": "Claude returned non-JSON"}), 502
     except anthropic.APIError as exc:
+        logger.error("Claude API error: %s", exc)
         return jsonify({"error": f"Claude API error: {exc}"}), 502
     except Exception as exc:
+        logger.error("Unexpected error in analyze_style: %s", exc)
         return jsonify({"error": str(exc)}), 500
 
 
