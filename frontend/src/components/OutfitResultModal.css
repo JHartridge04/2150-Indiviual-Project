@@ -1,0 +1,240 @@
+.orm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.orm-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.75rem;
+  position: relative;
+}
+
+.orm-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+}
+
+.orm-close:hover {
+  color: #111827;
+}
+
+.orm-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem;
+}
+
+.orm-summary {
+  color: #374151;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 3px solid #7c3aed;
+}
+
+.orm-section {
+  margin-bottom: 1.25rem;
+}
+
+.orm-section-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin: 0 0 0.65rem;
+}
+
+/* Anchor item */
+.orm-anchor-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: #faf5ff;
+  border: 1.5px solid #ede9fe;
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.orm-anchor-img {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.orm-anchor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.orm-item-desc {
+  font-size: 0.85rem;
+  color: #374151;
+  margin: 0;
+}
+
+.orm-color-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/* Wardrobe pieces grid */
+.orm-pieces-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.orm-piece-card {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.65rem;
+}
+
+.orm-piece-img {
+  width: 60px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.orm-img-placeholder {
+  width: 80px;
+  height: 100px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.orm-img-placeholder--small {
+  width: 60px;
+  height: 75px;
+  font-size: 1.2rem;
+}
+
+.orm-piece-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.orm-piece-reason {
+  font-size: 0.83rem;
+  color: #374151;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Missing pieces */
+.orm-missing-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.orm-missing-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: #374151;
+  padding: 0.5rem 0.75rem;
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+}
+
+.orm-missing-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.orm-missing-role {
+  flex-shrink: 0;
+}
+
+.orm-missing-desc {
+  color: #374151;
+  font-size: 0.85rem;
+}
+
+/* Product cards inside missing-piece callouts */
+.orm-missing-products {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.orm-missing-products .rec-card {
+  flex: 1 1 140px;
+  max-width: 180px;
+  background: #fff;
+  border: 1px solid #fde68a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.orm-missing-products .rec-image-wrap {
+  height: 120px;
+}
+
+.orm-missing-products .rec-body {
+  padding: 0.5rem 0.6rem 0.6rem;
+  gap: 0.2rem;
+}
+
+.orm-missing-products .rec-name {
+  font-size: 0.8rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.orm-missing-products .rec-btn {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.6rem;
+}

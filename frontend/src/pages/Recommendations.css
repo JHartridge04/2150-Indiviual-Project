@@ -61,6 +61,27 @@
   font-size: 1rem;
 }
 
+.loading-hint {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #7c3aed;
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.link-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .error-banner {
   background: #fef2f2;
   border: 1px solid #fca5a5;

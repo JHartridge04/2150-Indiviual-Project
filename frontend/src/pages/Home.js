@@ -7,7 +7,7 @@
  */
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { uploadPhoto, analyzeStyle } from "../services/api";
 import StyleProfile from "../components/StyleProfile";
@@ -15,6 +15,7 @@ import "./Home.css";
 
 export default function Home() {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
 
   // Upload / analysis state
   const [file, setFile] = useState(null);
@@ -23,6 +24,7 @@ export default function Home() {
   const [analysing, setAnalysing] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [analysisId, setAnalysisId] = useState(null);
   const [error, setError] = useState("");
 
   // -------------------------------------------------------------------------
@@ -78,6 +80,7 @@ export default function Home() {
       setAnalysing(true);
       const result = await analyzeStyle(url, token);
       setProfile(result);
+      setAnalysisId(result.analysis_id || null);
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
@@ -96,12 +99,10 @@ export default function Home() {
         <h1 className="app-title">👗 Style Assistant</h1>
         <nav className="home-nav">
           <span className="nav-email">{user?.email}</span>
-          <Link to="/recommendations" className="btn-secondary">
-            Recommendations
-          </Link>
-          <Link to="/logout" className="btn-outline">
-            Sign Out
-          </Link>
+          <Link to="/history" className="btn-secondary">History</Link>
+          <Link to="/wardrobe" className="btn-secondary">Wardrobe</Link>
+          <Link to="/profile" className="btn-secondary">Profile</Link>
+          <Link to="/logout" className="btn-outline">Sign Out</Link>
         </nav>
       </header>
 
@@ -156,13 +157,18 @@ export default function Home() {
             <StyleProfile profile={profile} imageUrl={uploadedUrl} />
 
             <div className="cta-row">
-              <Link
-                to="/recommendations"
-                state={{ styleTags: profile.style_tags }}
-                className="btn-primary"
-              >
-                Get Recommendations →
-              </Link>
+              {analysisId ? (
+                <button
+                  className="btn-primary"
+                  onClick={() => navigate(`/recommendations/${analysisId}`)}
+                >
+                  Get Recommendations →
+                </button>
+              ) : (
+                <Link to="/history" className="btn-secondary">
+                  View History
+                </Link>
+              )}
             </div>
           </section>
         )}

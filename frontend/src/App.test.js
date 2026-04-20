@@ -1,16 +1,35 @@
 /**
  * App.test.js
  * Smoke tests — verify pages render without crashing.
+ *
+ * Includes tests for History page: loading state, empty state, and grid render.
  */
 
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 // Mock the AuthContext so pages don't need a real Supabase session
 jest.mock("./context/AuthContext", () => ({
-  useAuth: () => ({ user: null, session: null, token: null, loading: false }),
+  useAuth: () => ({
+    user: { email: "test@example.com" },
+    session: null,
+    token: "fake-token",
+    loading: false,
+  }),
   AuthProvider: ({ children }) => <>{children}</>,
+}));
+
+// Mock the API service so History tests don't make real network calls.
+// Individual tests override getHistory via mockResolvedValueOnce.
+jest.mock("./services/api", () => ({
+  signUp: jest.fn(),
+  logIn: jest.fn(),
+  logOut: jest.fn(),
+  uploadPhoto: jest.fn(),
+  analyzeStyle: jest.fn(),
+  getHistory: jest.fn(),
+  getRecommendations: jest.fn(),
 }));
 
 // Mock supabaseClient to avoid real network calls
@@ -23,6 +42,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import StyleProfile from "./components/StyleProfile";
 import RecommendationCard from "./components/RecommendationCard";
+import History from "./pages/History";
 
 // ---------------------------------------------------------------------------
 // Auth pages
@@ -117,4 +137,68 @@ test("RecommendationCard displays item details", () => {
   expect(shopLink).toHaveAttribute("href", "https://www.uniqlo.com");
   expect(shopLink).toHaveAttribute("target", "_blank");
   expect(shopLink).toHaveAttribute("rel", "noopener noreferrer");
+});
+
+// ---------------------------------------------------------------------------
+// History page
+// ---------------------------------------------------------------------------
+
+// Pull in the mock so individual tests can configure return values.
+const { getHistory } = require("./services/api");
+
+test("History page renders loading state", () => {
+  // Return a promise that never resolves so the spinner stays visible.
+  getHistory.mockReturnValueOnce(new Promise(() => {}));
+
+  render(
+    <MemoryRouter>
+      <History />
+    </MemoryRouter>
+  );
+
+  expect(screen.getByText(/loading history/i)).toBeInTheDocument();
+});
+
+test("History page renders empty state", async () => {
+  getHistory.mockResolvedValueOnce({ analyses: [] });
+
+  render(
+    <MemoryRouter>
+      <History />
+    </MemoryRouter>
+  );
+
+  await waitFor(() => {
+    expect(screen.getByText(/no analyses yet/i)).toBeInTheDocument();
+  });
+});
+
+test("History page renders grid cards when data is returned", async () => {
+  getHistory.mockResolvedValueOnce({
+    analyses: [
+      {
+        id: "row-1",
+        image_url: "https://example.com/outfit.jpg",
+        colors: ["navy", "white"],
+        silhouettes: ["slim-fit"],
+        style_tags: ["casual"],
+        summary: "A clean casual outfit.",
+        created_at: "2024-03-15T12:00:00Z",
+      },
+    ],
+  });
+
+  render(
+    <MemoryRouter>
+      <History />
+    </MemoryRouter>
+  );
+
+  // The card image should appear once loading resolves
+  await waitFor(() => {
+    expect(screen.getByAltText("Outfit")).toBeInTheDocument();
+  });
+
+  // The loading spinner should no longer be present
+  expect(screen.queryByText(/loading history/i)).not.toBeInTheDocument();
 });

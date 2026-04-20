@@ -93,3 +93,33 @@
 .auth-switch a:hover {
   text-decoration: underline;
 }
+
+.auth-forgot-btn {
+  background: none;
+  border: none;
+  color: #7c3aed;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  margin-top: -0.25rem;
+}
+
+.auth-forgot-btn:hover {
+  text-decoration: underline;
+}
+
+.auth-forgot-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f5f0ff;
+  border-radius: 10px;
+  border: 1px solid #ede9fe;
+}
+
+.auth-forgot-msg {
+  font-size: 0.9rem;
+  color: #374151;
+  margin: 0;
+}

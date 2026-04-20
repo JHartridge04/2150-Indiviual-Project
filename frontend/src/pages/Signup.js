@@ -1,47 +1,48 @@
-/**
- * Signup.js
- * Allows new users to create an account with email and password.
- */
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import supabase from "../services/supabaseClient";
+import { signUp } from "../services/api";
+import PasswordStrengthMeter, { passwordMeetsMinimum } from "../components/PasswordStrengthMeter";
 import "./Auth.css";
+import "./Signup.css";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+  const [pwError, setPwError] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  const meetsMinimum = passwordMeetsMinimum(password);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    setMessage("");
+    setPwError("");
 
     if (password !== confirm) {
       setError("Passwords do not match.");
       return;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (!meetsMinimum) {
+      setPwError("Password does not meet the minimum requirements.");
       return;
     }
 
     setLoading(true);
-
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      // Many Supabase projects require email confirmation before the session is
-      // active, so show a confirmation message rather than immediately redirecting.
+      await signUp(email, password);
       setMessage(
         "Account created! Please check your email to confirm your address, then sign in."
       );
     } catch (err) {
-      setError(err.message || "Sign-up failed. Please try again.");
+      const msg = err.message || "Sign-up failed. Please try again.";
+      if (/password/i.test(msg)) {
+        setPwError(msg);
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -87,10 +88,13 @@ export default function Signup() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Min. 6 characters"
+            placeholder="Min. 8 characters"
             required
             autoComplete="new-password"
           />
+
+          <PasswordStrengthMeter password={password} />
+          {pwError && <p className="pw-error">{pwError}</p>}
 
           <label htmlFor="confirm">Confirm Password</label>
           <input
@@ -103,7 +107,7 @@ export default function Signup() {
             autoComplete="new-password"
           />
 
-          <button type="submit" disabled={loading} className="btn-primary">
+          <button type="submit" disabled={loading || !meetsMinimum} className="btn-primary">
             {loading ? "Creating account…" : "Create Account"}
           </button>
         </form>

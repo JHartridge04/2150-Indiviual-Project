@@ -20,6 +20,10 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Logout from "./pages/Logout";
 import Recommendations from "./pages/Recommendations";
+import History from "./pages/History";
+import Profile from "./pages/Profile";
+import Wardrobe from "./pages/Wardrobe";
+import ResetPassword from "./pages/ResetPassword";
 import "./App.css";
 
 export default function App() {
@@ -31,6 +35,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Protected routes */}
           <Route
@@ -42,10 +47,36 @@ export default function App() {
             }
           />
           <Route
-            path="/recommendations"
+            path="/recommendations/:analysisId"
             element={
               <ProtectedRoute>
                 <Recommendations />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <History />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/wardrobe"
+            element={
+              <ProtectedRoute>
+                <Wardrobe />
               </ProtectedRoute>
             }
           />
