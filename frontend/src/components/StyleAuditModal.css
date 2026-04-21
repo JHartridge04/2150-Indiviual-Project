@@ -1,0 +1,243 @@
+/* StyleAuditModal.css */
+
+.sam-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.72);
+  z-index: 300;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+}
+
+.sam-modal {
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-heavy) solid var(--ns-border);
+  width: min(680px, 100%);
+  position: relative;
+  padding: 2rem 1.75rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sam-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--ns-ink-muted);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  font-family: var(--ns-font-mono);
+}
+
+.sam-close:hover {
+  color: var(--ns-ink);
+}
+
+/* ---- Loading state ---- */
+
+.sam-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 0;
+}
+
+.sam-loading-hint {
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  color: var(--ns-ink-muted);
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+/* ---- Error / too-few state ---- */
+
+.sam-error-state {
+  padding: 1rem 0;
+}
+
+.sam-too-few {
+  font-size: 0.9rem;
+  color: var(--ns-ink-muted);
+  line-height: 1.5;
+}
+
+.sam-too-few a {
+  color: var(--ns-accent);
+  text-decoration: none;
+}
+
+.sam-too-few a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Stamp header ---- */
+
+.sam-stamp {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  border-bottom: var(--ns-border-heavy) solid var(--ns-border);
+  padding-bottom: 0.75rem;
+}
+
+.sam-stamp-label {
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--ns-ink);
+}
+
+.sam-stamp-date {
+  font-family: var(--ns-font-mono);
+  font-size: 0.68rem;
+  color: var(--ns-ink-muted);
+  letter-spacing: 0.06em;
+}
+
+/* ---- Summary ---- */
+
+.sam-summary {
+  font-size: 0.9rem;
+  color: var(--ns-ink);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: var(--ns-bg);
+  border-left: var(--ns-border-heavy) solid var(--ns-accent);
+}
+
+/* ---- Sections ---- */
+
+.sam-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sam-section-title {
+  font-family: var(--ns-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--ns-ink-muted);
+  margin: 0;
+}
+
+/* ---- Strengths ---- */
+
+.sam-strengths {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--ns-ink);
+  line-height: 1.4;
+}
+
+/* ---- Gap cards ---- */
+
+.sam-gaps {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--ns-border-subtle);
+  border: var(--ns-border-width) solid var(--ns-border);
+}
+
+.sam-gap-card {
+  background: var(--ns-bg-alt);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sam-gap-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sam-gap-title {
+  font-family: var(--ns-font-display);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ns-ink);
+}
+
+.sam-gap-desc {
+  font-size: 0.875rem;
+  color: var(--ns-ink-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sam-gap-error {
+  font-size: 0.8rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.sam-find-btn {
+  align-self: flex-start;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.9rem;
+}
+
+.sam-no-products {
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  color: var(--ns-ink-muted);
+  margin: 0;
+}
+
+/* ---- Inline product grid ---- */
+
+.sam-products-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.sam-products-grid .rec-card {
+  flex: 1 1 140px;
+  max-width: 180px;
+  border: var(--ns-border-width) solid var(--ns-border-subtle);
+}
+
+.sam-products-grid .rec-image-wrap {
+  height: 120px;
+}
+
+.sam-products-grid .rec-body {
+  padding: 0.5rem 0.6rem 0.6rem;
+  gap: 0.2rem;
+}
+
+.sam-products-grid .rec-name {
+  font-size: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sam-products-grid .rec-btn {
+  font-size: 0.72rem;
+  padding: 0.3rem 0.5rem;
+}

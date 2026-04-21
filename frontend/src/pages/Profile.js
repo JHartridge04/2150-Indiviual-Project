@@ -200,6 +200,8 @@ export default function Profile() {
           <Link to="/" className="btn-secondary">Upload</Link>
           <Link to="/history" className="btn-secondary">History</Link>
           <Link to="/wardrobe" className="btn-secondary">Wardrobe</Link>
+          <Link to="/compare" className="btn-secondary">Compare</Link>
+          <Link to="/looks" className="btn-secondary">Generate</Link>
           <Link to="/logout" className="btn-outline">Sign Out</Link>
         </nav>
       </header>

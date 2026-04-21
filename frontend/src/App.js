@@ -23,6 +23,8 @@ import Recommendations from "./pages/Recommendations";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
 import Wardrobe from "./pages/Wardrobe";
+import Compare from "./pages/Compare";
+import GenerateLook from "./pages/GenerateLook";
 import ResetPassword from "./pages/ResetPassword";
 import "./App.css";
 
@@ -77,6 +79,24 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Wardrobe />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/compare"
+            element={
+              <ProtectedRoute>
+                <Compare />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/looks"
+            element={
+              <ProtectedRoute>
+                <GenerateLook />
               </ProtectedRoute>
             }
           />

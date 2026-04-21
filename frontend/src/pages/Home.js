@@ -102,6 +102,8 @@ export default function Home() {
           <span className="nav-email">{user?.email}</span>
           <Link to="/history" className="btn-secondary">History</Link>
           <Link to="/wardrobe" className="btn-secondary">Wardrobe</Link>
+          <Link to="/compare" className="btn-secondary">Compare</Link>
+          <Link to="/looks" className="btn-secondary">Generate</Link>
           <Link to="/profile" className="btn-secondary">Profile</Link>
           <Link to="/logout" className="btn-outline">Sign Out</Link>
         </nav>

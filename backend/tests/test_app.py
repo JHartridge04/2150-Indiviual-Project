@@ -1514,4 +1514,650 @@ def test_build_outfit_anchor_not_found(client):
         headers={"Authorization": f"Bearer {FAKE_JWT}"},
     )
     assert resp.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# Compare endpoint
+# ---------------------------------------------------------------------------
+
+_FAKE_ANALYSIS = {
+    "id": "aaaaaaaa-0000-0000-0000-000000000001",
+    "image_url": "https://fake.supabase.co/storage/v1/object/public/outfit-photos/u1/img.jpg",
+    "colors": ["black", "white"],
+    "silhouettes": ["slim"],
+    "style_tags": ["streetwear"],
+    "summary": "A clean streetwear look.",
+}
+
+_FAKE_COMPARISON = {
+    "verdict": "A",
+    "verdict_reason": "Outfit A is more versatile.",
+    "outfit_a": {"strengths": ["clean lines"], "concerns": [], "best_for": "everyday"},
+    "outfit_b": {"strengths": ["bold colour"], "concerns": ["too loud"], "best_for": "weekend"},
+    "contextual_notes": "Both outfits are solid choices.",
+}
+
+
+
+def _mock_claude_compare(mock_anthropic):
+    """Make anthropic_client.messages.create return a valid comparison JSON."""
+    mock_msg = MagicMock()
+    mock_msg.content = [MagicMock(text=json.dumps(_FAKE_COMPARISON))]
+    mock_anthropic.messages.create.return_value = mock_msg
+
+
+def test_compare_requires_auth(client):
+    c, *_ = client
+    resp = c.post(
+        "/api/compare",
+        json={
+            "outfit_a": {"analysis_id": "aaa"},
+            "outfit_b": {"analysis_id": "bbb"},
+        },
+    )
+    assert resp.status_code == 401
+
+
+def test_compare_invalid_input_missing_outfit(client):
+    c, mock_supabase, _ = client
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    resp = c.post(
+        "/api/compare",
+        json={"outfit_a": {"analysis_id": "aaa"}},
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 400
+    assert "outfit_b" in resp.get_json()["error"]
+
+
+def test_compare_invalid_input_no_source(client):
+    c, mock_supabase, _ = client
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    resp = c.post(
+        "/api/compare",
+        json={"outfit_a": {}, "outfit_b": {"analysis_id": "bbb"}},
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 400
+    assert "analysis_id" in resp.get_json()["error"] or "image_url" in resp.get_json()["error"]
+
+
+def test_compare_with_two_analysis_ids(client):
+    c, mock_supabase, mock_anthropic = client
+
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    # Two sequential style_analyses lookups + one profile lookup (returns nothing)
+    call_count = [0]
+
+    def _table_side_effect(name):
+        chain = MagicMock()
+        for m in ("select", "eq", "limit"):
+            getattr(chain, m).return_value = chain
+
+        if name == "style_analyses":
+            call_count[0] += 1
+            if call_count[0] == 1:
+                chain.execute.return_value = MagicMock(data=[_FAKE_ANALYSIS])
+            else:
+                second = dict(_FAKE_ANALYSIS)
+                second["id"] = "aaaaaaaa-0000-0000-0000-000000000002"
+                chain.execute.return_value = MagicMock(data=[second])
+        else:
+            chain.execute.return_value = MagicMock(data=[])
+        return chain
+
+    mock_supabase.table.side_effect = _table_side_effect
+    _mock_claude_compare(mock_anthropic)
+
+    resp = c.post(
+        "/api/compare",
+        json={
+            "outfit_a": {"analysis_id": "aaaaaaaa-0000-0000-0000-000000000001"},
+            "outfit_b": {"analysis_id": "aaaaaaaa-0000-0000-0000-000000000002"},
+            "occasion": "Work",
+        },
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert "comparison" in body
+    assert "outfit_a" in body
+    assert "outfit_b" in body
+    assert body["comparison"]["verdict"] == "A"
+
+
+def test_compare_with_analysis_id_not_found(client):
+    c, mock_supabase, _ = client
+
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    chain = MagicMock()
+    for m in ("select", "eq", "limit"):
+        getattr(chain, m).return_value = chain
+    chain.execute.return_value = MagicMock(data=[])  # not found
+    mock_supabase.table.return_value = chain
+
+    resp = c.post(
+        "/api/compare",
+        json={
+            "outfit_a": {"analysis_id": "nonexistent-id"},
+            "outfit_b": {"analysis_id": "another-nonexistent"},
+        },
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 400
+    assert "not found" in resp.get_json()["error"]
+
+
+def test_compare_with_one_analysis_id_and_one_image_url(client):
+    c, mock_supabase, mock_anthropic = client
+
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    # style_analyses fetch for outfit_a returns a row; insert for save_analysis
+    call_count = [0]
+
+    def _table_side_effect(name):
+        chain = MagicMock()
+        for m in ("select", "eq", "limit"):
+            getattr(chain, m).return_value = chain
+        chain.insert.return_value = chain
+        if name == "style_analyses":
+            call_count[0] += 1
+            if call_count[0] == 1:
+                chain.execute.return_value = MagicMock(data=[_FAKE_ANALYSIS])
+            else:
+                chain.execute.return_value = MagicMock(data=[{"id": "new-saved-id"}])
+        else:
+            chain.execute.return_value = MagicMock(data=[])
+        return chain
+
+    mock_supabase.table.side_effect = _table_side_effect
+
+    # Two Claude calls: vision analysis + comparison
+    vision_json = {
+        "colors": ["navy"],
+        "silhouettes": ["relaxed"],
+        "style_tags": ["casual"],
+        "summary": "A relaxed casual outfit.",
+    }
+    call_index = [0]
+
+    def _claude_side_effect(**_):
+        call_index[0] += 1
+        mock_msg = MagicMock()
+        if call_index[0] == 1:
+            mock_msg.content = [MagicMock(text=json.dumps(vision_json))]
+        else:
+            mock_msg.content = [MagicMock(text=json.dumps(_FAKE_COMPARISON))]
+        return mock_msg
+
+    mock_anthropic.messages.create.side_effect = _claude_side_effect
+
+    image_url = f"https://fake.supabase.co/storage/v1/object/public/outfit-photos/u1/b.jpg"
+
+    with patch("app.req_lib.get") as mock_get:
+        mock_response = MagicMock()
+        mock_response.headers = {"Content-Type": "image/jpeg", "Content-Length": "1000"}
+        mock_response.content = b"\xff\xd8\xff" + b"\x00" * 100
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        resp = c.post(
+            "/api/compare",
+            json={
+                "outfit_a": {"analysis_id": "aaaaaaaa-0000-0000-0000-000000000001"},
+                "outfit_b": {"image_url": image_url},
+            },
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body["comparison"]["verdict"] == "A"
+    assert body["outfit_b"]["image_url"] == image_url
+
+
+def test_compare_with_two_new_images(client):
+    c, mock_supabase, mock_anthropic = client
+
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    chain = MagicMock()
+    for m in ("select", "eq", "limit"):
+        getattr(chain, m).return_value = chain
+    chain.insert.return_value = chain
+    chain.execute.return_value = MagicMock(data=[{"id": "saved-id"}])
+    mock_supabase.table.return_value = chain
+
+    vision_json = {
+        "colors": ["red"],
+        "silhouettes": ["oversized"],
+        "style_tags": ["bold"],
+        "summary": "A bold look.",
+    }
+    call_index = [0]
+
+    def _claude_side_effect(**_):
+        call_index[0] += 1
+        mock_msg = MagicMock()
+        if call_index[0] <= 2:
+            mock_msg.content = [MagicMock(text=json.dumps(vision_json))]
+        else:
+            mock_msg.content = [MagicMock(text=json.dumps(_FAKE_COMPARISON))]
+        return mock_msg
+
+    mock_anthropic.messages.create.side_effect = _claude_side_effect
+
+    url_a = "https://fake.supabase.co/storage/v1/object/public/outfit-photos/u1/a.jpg"
+    url_b = "https://fake.supabase.co/storage/v1/object/public/outfit-photos/u1/b.jpg"
+
+    with patch("app.req_lib.get") as mock_get:
+        mock_response = MagicMock()
+        mock_response.headers = {"Content-Type": "image/jpeg", "Content-Length": "500"}
+        mock_response.content = b"\xff\xd8\xff" + b"\x00" * 50
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        resp = c.post(
+            "/api/compare",
+            json={
+                "outfit_a": {"image_url": url_a},
+                "outfit_b": {"image_url": url_b},
+            },
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert "comparison" in body
+    assert body["outfit_a"]["image_url"] == url_a
+    assert body["outfit_b"]["image_url"] == url_b
+
+
+# ---------------------------------------------------------------------------
+# Generate a Look endpoint
+# ---------------------------------------------------------------------------
+
+_FAKE_LOOK_RESULT = {
+    "title": "Relaxed Downtown",
+    "summary": "A clean streetwear look built around neutral tones.",
+    "wardrobe_pieces": [
+        {"item_id": "item-001", "role": "top", "reason": "Pairs well with the vibe."},
+    ],
+    "missing_pieces": [
+        {"role": "shoes", "description": "chunky white sneakers"},
+    ],
+}
+
+_FAKE_WARDROBE_ITEM = {
+    "id": "item-001",
+    "category": "top",
+    "colors": ["black"],
+    "style_tags": ["streetwear"],
+    "description": "Black oversized tee",
+    "ownership": "owned",
+    "image_url": "https://fake.supabase.co/storage/v1/object/public/wardrobe-items/u1/top.jpg",
+}
+
+_FAKE_PRODUCTS = [
+    {
+        "product_id": "p1",
+        "title": "Chunky White Sneaker",
+        "price": "89.99",
+        "image_url": "https://img.example.com/sneaker.jpg",
+        "product_url": "https://shop.example.com/sneaker",
+        "retailer": "ShoeStore",
+        "source_query": "chunky white sneakers",
+    }
+]
+
+
+def _setup_generate_look_mocks(mock_supabase, wardrobe_data=None, profile_data=None):
+    """Wire mock_supabase for the generate-look endpoint."""
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    wardrobe_data = wardrobe_data if wardrobe_data is not None else [_FAKE_WARDROBE_ITEM]
+    profile_data = profile_data if profile_data is not None else [{"gender": "male", "budget_max_usd": 150}]
+
+    call_count = [0]
+
+    def _table_side_effect(name):
+        chain = MagicMock()
+        for m in ("select", "eq", "order", "limit", "insert"):
+            getattr(chain, m).return_value = chain
+
+        call_count[0] += 1
+        if name == "wardrobe_items":
+            chain.execute.return_value = MagicMock(data=wardrobe_data)
+        else:
+            chain.execute.return_value = MagicMock(data=profile_data)
+        return chain
+
+    mock_supabase.table.side_effect = _table_side_effect
+
+
+def test_generate_look_requires_auth(client):
+    c, *_ = client
+    resp = c.post("/api/looks/generate", json={"occasion": "work"})
+    assert resp.status_code == 401
+
+
+def test_generate_look_success_with_all_inputs(client):
+    c, mock_supabase, mock_anthropic = client
+    _setup_generate_look_mocks(mock_supabase)
+
+    # Claude returns the look JSON
+    mock_msg = MagicMock()
+    mock_msg.content = [MagicMock(text=json.dumps(_FAKE_LOOK_RESULT))]
+    mock_anthropic.messages.create.return_value = mock_msg
+
+    with patch("app.search_products", return_value=_FAKE_PRODUCTS), \
+         patch("app.annotate_recommendations", return_value=_FAKE_PRODUCTS):
+        resp = c.post(
+            "/api/looks/generate",
+            json={"occasion": "Work", "weather": "Cold", "vibe": "Minimalist", "notes": "Comfortable"},
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body["title"] == "Relaxed Downtown"
+    assert "wardrobe_pieces" in body
+    assert "missing_pieces" in body
+    assert "wardrobe_items" in body
+    assert body["missing_pieces"][0]["products"] == _FAKE_PRODUCTS
+
+
+def test_generate_look_success_no_inputs(client):
+    c, mock_supabase, mock_anthropic = client
+    _setup_generate_look_mocks(mock_supabase)
+
+    mock_msg = MagicMock()
+    mock_msg.content = [MagicMock(text=json.dumps(_FAKE_LOOK_RESULT))]
+    mock_anthropic.messages.create.return_value = mock_msg
+
+    with patch("app.search_products", return_value=[]), \
+         patch("app.annotate_recommendations", return_value=[]):
+        resp = c.post(
+            "/api/looks/generate",
+            json={},
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert "title" in body
+    assert "wardrobe_items" in body
+
+
+def test_generate_look_product_search_failure(client):
+    c, mock_supabase, mock_anthropic = client
+    _setup_generate_look_mocks(mock_supabase)
+
+    mock_msg = MagicMock()
+    mock_msg.content = [MagicMock(text=json.dumps(_FAKE_LOOK_RESULT))]
+    mock_anthropic.messages.create.return_value = mock_msg
+
+    def _search_raises(_):
+        raise RuntimeError("RapidAPI down")
+
+    with patch("app.search_products", side_effect=_search_raises):
+        resp = c.post(
+            "/api/looks/generate",
+            json={"vibe": "Streetwear"},
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body["missing_pieces"][0]["products"] == []
+
+
+def test_generate_look_no_wardrobe(client):
+    c, mock_supabase, mock_anthropic = client
+    _setup_generate_look_mocks(mock_supabase, wardrobe_data=[])
+
+    all_missing = {
+        "title": "Street Ready",
+        "summary": "A fresh look built entirely from scratch.",
+        "wardrobe_pieces": [],
+        "missing_pieces": [
+            {"role": "top", "description": "white oversized tee"},
+            {"role": "bottom", "description": "black slim joggers"},
+        ],
+    }
+    mock_msg = MagicMock()
+    mock_msg.content = [MagicMock(text=json.dumps(all_missing))]
+    mock_anthropic.messages.create.return_value = mock_msg
+
+    with patch("app.search_products", return_value=[]):
+        resp = c.post(
+            "/api/looks/generate",
+            json={"occasion": "Casual weekend"},
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert body["wardrobe_pieces"] == []
+    assert len(body["missing_pieces"]) == 2
+    assert body["wardrobe_items"] == []
+
+
+# ---------------------------------------------------------------------------
+# Style Audit endpoints
+# ---------------------------------------------------------------------------
+
+_FAKE_AUDIT_RESULT = {
+    "summary": "A solid casual wardrobe that lacks versatility for smarter occasions.",
+    "strengths": ["Good variety of tops", "Strong streetwear palette"],
+    "gaps": [
+        {
+            "id": "neutral-bottoms",
+            "title": "Neutral Bottoms",
+            "description": "No neutral trousers to pair with statement tops.",
+            "suggested_search": "neutral slim trousers",
+        },
+        {
+            "id": "outerwear",
+            "title": "Outerwear",
+            "description": "No coat or jacket for cooler days.",
+            "suggested_search": "minimalist overcoat",
+        },
+        {
+            "id": "smart-shoes",
+            "title": "Smart Shoes",
+            "description": "Only trainers — nothing for smarter occasions.",
+            "suggested_search": "clean leather shoes",
+        },
+    ],
+}
+
+_FAKE_GAP_PRODUCTS = [
+    {
+        "product_id": "p1",
+        "title": "Slim Neutral Chino",
+        "price": "65.00",
+        "image_url": "https://img.example.com/chino.jpg",
+        "product_url": "https://shop.example.com/chino",
+        "retailer": "ThreadCo",
+        "source_query": "neutral slim trousers",
+    },
+    {
+        "product_id": "p2",
+        "title": "Dark Khaki Trousers",
+        "price": "72.00",
+        "image_url": "https://img.example.com/khaki.jpg",
+        "product_url": "https://shop.example.com/khaki",
+        "retailer": "StyleStore",
+        "source_query": "neutral slim trousers",
+    },
+    {
+        "product_id": "p3",
+        "title": "Stone Linen Trousers",
+        "price": "58.00",
+        "image_url": "https://img.example.com/linen.jpg",
+        "product_url": "https://shop.example.com/linen",
+        "retailer": "ModernBasics",
+        "source_query": "neutral slim trousers",
+    },
+]
+
+
+def _make_wardrobe_items(count):
+    return [
+        {
+            "category": "top",
+            "colors": ["black"],
+            "style_tags": ["streetwear"],
+            "ownership": "owned",
+        }
+        for _ in range(count)
+    ]
+
+
+def _setup_audit_mocks(mock_supabase, wardrobe_count=8):
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    call_count = [0]
+
+    def _table_side_effect(name):
+        chain = MagicMock()
+        for m in ("select", "eq", "order", "limit"):
+            getattr(chain, m).return_value = chain
+
+        call_count[0] += 1
+        if name == "wardrobe_items":
+            chain.execute.return_value = MagicMock(data=_make_wardrobe_items(wardrobe_count))
+        else:
+            chain.execute.return_value = MagicMock(data=[])
+        return chain
+
+    mock_supabase.table.side_effect = _table_side_effect
+
+
+def test_audit_requires_auth(client):
+    c, *_ = client
+    resp = c.post("/api/wardrobe/audit")
+    assert resp.status_code == 401
+
+
+def test_audit_too_few_items(client):
+    c, mock_supabase, _ = client
+    _setup_audit_mocks(mock_supabase, wardrobe_count=3)
+
+    resp = c.post(
+        "/api/wardrobe/audit",
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 400
+    assert "5 items" in resp.get_json()["error"]
+
+
+def test_audit_success(client):
+    c, mock_supabase, mock_anthropic = client
+    _setup_audit_mocks(mock_supabase, wardrobe_count=8)
+
+    mock_msg = MagicMock()
+    mock_msg.content = [MagicMock(text=json.dumps(_FAKE_AUDIT_RESULT))]
+    mock_anthropic.messages.create.return_value = mock_msg
+
+    resp = c.post(
+        "/api/wardrobe/audit",
+        headers={"Authorization": f"Bearer {FAKE_JWT}"},
+    )
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert "summary" in body
+    assert "strengths" in body
+    assert "gaps" in body
+    assert 3 <= len(body["gaps"]) <= 6
+    gap = body["gaps"][0]
+    assert "id" in gap
+    assert "title" in gap
+    assert "description" in gap
+    assert "suggested_search" in gap
+
+
+def test_fill_gap_requires_auth(client):
+    c, *_ = client
+    resp = c.post(
+        "/api/wardrobe/audit/fill-gap",
+        json={"gap_title": "Neutral Bottoms", "suggested_search": "neutral slim trousers"},
+    )
+    assert resp.status_code == 401
+
+
+def test_fill_gap_success(client):
+    c, mock_supabase, mock_anthropic = client
+
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    chain = MagicMock()
+    for m in ("select", "eq", "limit"):
+        getattr(chain, m).return_value = chain
+    chain.execute.return_value = MagicMock(data=[])
+    mock_supabase.table.return_value = chain
+
+    with patch("app.search_products", return_value=_FAKE_GAP_PRODUCTS), \
+         patch("app.annotate_recommendations", return_value=_FAKE_GAP_PRODUCTS):
+        resp = c.post(
+            "/api/wardrobe/audit/fill-gap",
+            json={
+                "gap_title": "Neutral Bottoms",
+                "gap_description": "No neutral trousers.",
+                "suggested_search": "neutral slim trousers",
+            },
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert "products" in body
+    assert len(body["products"]) == 3
+
+
+def test_fill_gap_search_failure(client):
+    c, mock_supabase, _ = client
+
+    mock_user_resp = MagicMock()
+    mock_user_resp.user.id = "user-123"
+    mock_supabase.auth.get_user.return_value = mock_user_resp
+
+    chain = MagicMock()
+    for m in ("select", "eq", "limit"):
+        getattr(chain, m).return_value = chain
+    chain.execute.return_value = MagicMock(data=[])
+    mock_supabase.table.return_value = chain
+
+    with patch("app.search_products", side_effect=RuntimeError("RapidAPI down")):
+        resp = c.post(
+            "/api/wardrobe/audit/fill-gap",
+            json={"gap_title": "Outerwear", "suggested_search": "minimalist overcoat"},
+            headers={"Authorization": f"Bearer {FAKE_JWT}"},
+        )
+
+    assert resp.status_code == 502
     assert "error" in resp.get_json()

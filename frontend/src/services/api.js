@@ -357,3 +357,79 @@ export async function buildOutfit(anchorItemId, occasion, token) {
   if (!res.ok) throw new Error(data.error || "Failed to build outfit");
   return data; // { anchor_item_id, summary, wardrobe_pieces, missing_pieces }
 }
+
+// ---------------------------------------------------------------------------
+// Style Audit
+// ---------------------------------------------------------------------------
+
+/**
+ * Run a full wardrobe style audit via Claude.
+ * @param {string} token - access token
+ */
+export async function runStyleAudit(token) {
+  const res = await fetch(`${BASE_URL}/api/wardrobe/audit`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Style audit failed");
+  return data; // { summary, strengths, gaps }
+}
+
+/**
+ * Fetch shoppable products to fill a specific wardrobe gap.
+ * @param {{ gap_title: string, gap_description: string, suggested_search: string }} gapData
+ * @param {string} token - access token
+ */
+export async function fillGap(gapData, token) {
+  const res = await fetch(`${BASE_URL}/api/wardrobe/audit/fill-gap`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(gapData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to find products");
+  return data; // { products: [...] }
+}
+
+// ---------------------------------------------------------------------------
+// Generate a Look
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a complete outfit concept from user intent via Claude.
+ * @param {{ occasion?: string, weather?: string, vibe?: string, notes?: string }} inputs
+ * @param {string} token - access token
+ */
+export async function generateLook(inputs, token) {
+  const res = await fetch(`${BASE_URL}/api/looks/generate`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(inputs),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to generate look");
+  return data; // { title, summary, wardrobe_pieces, missing_pieces, wardrobe_items }
+}
+
+// ---------------------------------------------------------------------------
+// Outfit comparison
+// ---------------------------------------------------------------------------
+
+/**
+ * Compare two outfits with AI and get a structured verdict.
+ * @param {{ analysis_id?: string, image_url?: string }} outfitA
+ * @param {{ analysis_id?: string, image_url?: string }} outfitB
+ * @param {string} occasion - optional occasion context
+ * @param {string} token    - access token
+ */
+export async function compareOutfits(outfitA, outfitB, occasion, token) {
+  const res = await fetch(`${BASE_URL}/api/compare`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ outfit_a: outfitA, outfit_b: outfitB, occasion }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Comparison failed");
+  return data; // { comparison, outfit_a, outfit_b }
+}

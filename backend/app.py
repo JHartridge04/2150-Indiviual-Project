@@ -1977,6 +1977,654 @@ def apply_derived_profile():
 
 
 # ---------------------------------------------------------------------------
+# Style Audit endpoints
+# ---------------------------------------------------------------------------
+
+@app.route("/api/wardrobe/audit", methods=["POST"])
+def wardrobe_audit():
+    """
+    Analyse the user's full wardrobe and identify category-level gaps.
+
+    Requires: Authorization: Bearer <access_token>
+    Response JSON:
+      {
+        "summary": str,
+        "strengths": [...],
+        "gaps": [{ "id", "title", "description", "suggested_search" }, ...]
+      }
+    """
+    token, err = _require_token()
+    if err:
+        return err
+
+    try:
+        user_supabase: Client = create_client(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY,
+            options=ClientOptions(headers={"Authorization": f"Bearer {token}"}),
+        )
+        user_id = user_supabase.auth.get_user(token).user.id
+    except Exception as exc:
+        logger.warning("wardrobe_audit: token validation failed: %s", exc)
+        return jsonify({"error": "Invalid or expired token"}), 401
+
+    try:
+        wardrobe_resp = (
+            user_supabase.table("wardrobe_items")
+            .select("category,colors,style_tags,ownership")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
+            .limit(100)
+            .execute()
+        )
+        items = wardrobe_resp.data if isinstance(wardrobe_resp.data, list) else []
+    except Exception as exc:
+        logger.error("wardrobe_audit: fetch failed: %s", exc)
+        return jsonify({"error": "Failed to fetch wardrobe"}), 500
+
+    if len(items) < 5:
+        return jsonify({
+            "error": "Add at least 5 items to your wardrobe to run a style audit."
+        }), 400
+
+    # Fetch profile — non-fatal
+    profile: dict | None = None
+    try:
+        profile = get_user_profile(user_id, token)
+    except Exception as exc:
+        logger.warning("wardrobe_audit: profile fetch failed: %s", exc)
+
+    profile_context = ""
+    if isinstance(profile, dict):
+        parts = []
+        for key in ("gender", "age_range", "preferred_styles", "occasions"):
+            val = profile.get(key)
+            if val:
+                parts.append(f"{key}: {val}")
+        if parts:
+            profile_context = "\n\nUser profile: " + "; ".join(parts) + "."
+
+    wardrobe_summary = [
+        {
+            "category": item.get("category"),
+            "colors": item.get("colors", []),
+            "style_tags": item.get("style_tags", []),
+            "ownership": item.get("ownership"),
+        }
+        for item in items
+    ]
+
+    system = (
+        "You are an expert personal stylist performing a wardrobe audit. "
+        "Analyse the user's wardrobe inventory and identify 3–6 category-level gaps. "
+        "Consider: common wardrobe categories (tops, bottoms, shoes, outerwear, "
+        "accessories, layering pieces, statement pieces), whether the user's preferred "
+        "styles are achievable with what they own, colour balance (e.g. too heavy on "
+        "patterns, lacking neutrals), and versatility (e.g. all-casual, nothing for "
+        "smarter occasions). "
+        "Return ONLY valid JSON with exactly this schema (no markdown fences, no extra keys):\n"
+        '{\n'
+        '  "summary": "<2-3 sentence overview of the wardrobe state>",\n'
+        '  "strengths": ["<one-phrase strength>", ...],\n'
+        '  "gaps": [\n'
+        '    {\n'
+        '      "id": "<short-stable-slug e.g. neutral-bottoms>",\n'
+        '      "title": "<short gap title e.g. Neutral Bottoms>",\n'
+        '      "description": "<1-2 sentence explanation of the gap and why it matters>",\n'
+        '      "suggested_search": "<a single product search query that would fill this gap>"\n'
+        '    }\n'
+        '  ]\n'
+        '}\n'
+        "Return between 3 and 6 gaps. No more, no fewer."
+    )
+
+    user_msg = (
+        f"Wardrobe ({len(items)} items):\n{json.dumps(wardrobe_summary, indent=2)}"
+        + profile_context
+        + "\n\nIdentify the key gaps and return the structured JSON audit."
+    )
+
+    try:
+        msg = anthropic_client.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=1024,
+            system=system,
+            messages=[{"role": "user", "content": user_msg}],
+            timeout=30,
+        )
+        result = json.loads(_strip_fences(msg.content[0].text))
+    except json.JSONDecodeError:
+        logger.warning("wardrobe_audit: Claude returned non-JSON")
+        return jsonify({"error": "Claude returned non-JSON response"}), 502
+    except anthropic.APIError as exc:
+        logger.error("wardrobe_audit: Claude API error: %s", exc)
+        return jsonify({"error": f"Claude API error: {exc}"}), 502
+    except Exception as exc:
+        logger.error("wardrobe_audit failed: %s", exc)
+        return jsonify({"error": str(exc)}), 500
+
+    logger.info("wardrobe_audit completed for user %s (%d gaps)", user_id, len(result.get("gaps", [])))
+    return jsonify(result), 200
+
+
+@app.route("/api/wardrobe/audit/fill-gap", methods=["POST"])
+def audit_fill_gap():
+    """
+    Fetch shoppable products to fill a specific wardrobe gap.
+
+    Requires: Authorization: Bearer <access_token>
+    Request JSON: { "gap_title": str, "gap_description": str, "suggested_search": str }
+    Response JSON: { "products": [...] }
+    """
+    token, err = _require_token()
+    if err:
+        return err
+
+    try:
+        user_supabase: Client = create_client(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY,
+            options=ClientOptions(headers={"Authorization": f"Bearer {token}"}),
+        )
+        user_id = user_supabase.auth.get_user(token).user.id
+    except Exception as exc:
+        logger.warning("audit_fill_gap: token validation failed: %s", exc)
+        return jsonify({"error": "Invalid or expired token"}), 401
+
+    body = request.get_json(silent=True) or {}
+    suggested_search = (body.get("suggested_search") or "").strip()
+    gap_title = (body.get("gap_title") or "").strip()
+
+    if not suggested_search:
+        return jsonify({"error": "suggested_search is required"}), 400
+
+    # Fetch profile for budget context — non-fatal
+    profile: dict | None = None
+    try:
+        profile = get_user_profile(user_id, token)
+    except Exception as exc:
+        logger.warning("audit_fill_gap: profile fetch failed: %s", exc)
+
+    budget_suffix = ""
+    if isinstance(profile, dict):
+        budget = profile.get("budget_max_usd")
+        if budget:
+            budget_suffix = f" under ${budget}"
+
+    query = suggested_search + budget_suffix
+
+    try:
+        products = search_products(query)[:3]
+    except Exception as exc:
+        logger.error("audit_fill_gap: search failed for '%s': %s", query, exc)
+        return jsonify({"error": f"Product search failed: {exc}"}), 502
+
+    if products:
+        gap_analysis = {"style_tags": [gap_title] if gap_title else [], "summary": suggested_search}
+        try:
+            products = annotate_recommendations(gap_analysis, products, profile)
+        except Exception as exc:
+            logger.warning("audit_fill_gap: annotation failed: %s", exc)
+
+    logger.info("audit_fill_gap returned %d products for '%s'", len(products), gap_title)
+    return jsonify({"products": products}), 200
+
+
+# ---------------------------------------------------------------------------
+# Generate a Look endpoint
+# ---------------------------------------------------------------------------
+
+@app.route("/api/looks/generate", methods=["POST"])
+def generate_look():
+    """
+    Design a complete outfit concept from user intent (occasion/weather/vibe).
+
+    Selects pieces from the user's wardrobe where possible; identifies gaps and
+    enriches them with shoppable products via RapidAPI.
+
+    Requires: Authorization: Bearer <access_token>
+    Request JSON (all fields optional):
+      { "occasion": str, "weather": str, "vibe": str, "notes": str }
+    Response JSON:
+      {
+        "title": str,
+        "summary": str,
+        "wardrobe_pieces": [{ "item_id", "role", "reason" }, ...],
+        "missing_pieces": [{ "role", "description", "products": [...] }, ...],
+        "wardrobe_items": [<full wardrobe rows for frontend lookup>]
+      }
+    """
+    token, err = _require_token()
+    if err:
+        return err
+
+    try:
+        user_supabase: Client = create_client(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY,
+            options=ClientOptions(headers={"Authorization": f"Bearer {token}"}),
+        )
+        user_id = user_supabase.auth.get_user(token).user.id
+    except Exception as exc:
+        logger.warning("generate_look: token validation failed: %s", exc)
+        return jsonify({"error": "Invalid or expired token"}), 401
+
+    body = request.get_json(silent=True) or {}
+    occasion = (body.get("occasion") or "").strip()
+    weather = (body.get("weather") or "").strip()
+    vibe = (body.get("vibe") or "").strip()
+    notes = (body.get("notes") or "").strip()
+
+    # Fetch wardrobe — non-fatal
+    wardrobe_items: list[dict] = []
+    try:
+        wardrobe_resp = (
+            user_supabase.table("wardrobe_items")
+            .select("id,category,colors,style_tags,description,ownership,image_url")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
+            .limit(50)
+            .execute()
+        )
+        if isinstance(wardrobe_resp.data, list):
+            wardrobe_items = wardrobe_resp.data
+    except Exception as exc:
+        logger.warning("generate_look: failed to fetch wardrobe: %s", exc)
+
+    # Fetch profile — non-fatal
+    profile: dict | None = None
+    try:
+        profile = get_user_profile(user_id, token)
+    except Exception as exc:
+        logger.warning("generate_look: profile fetch failed: %s", exc)
+
+    profile_context = ""
+    if isinstance(profile, dict):
+        parts = []
+        for key in ("gender", "age_range", "body_type", "preferred_styles", "occasions"):
+            val = profile.get(key)
+            if val:
+                parts.append(f"{key}: {val}")
+        if parts:
+            profile_context = "\n\nUser profile: " + "; ".join(parts) + "."
+
+    # Build compact wardrobe representation for the prompt (omit image_url noise)
+    wardrobe_for_prompt = [
+        {
+            "id": item.get("id"),
+            "category": item.get("category"),
+            "colors": item.get("colors", []),
+            "style_tags": item.get("style_tags", []),
+            "description": item.get("description", ""),
+            "ownership": item.get("ownership"),
+        }
+        for item in wardrobe_items
+    ]
+
+    context_lines = []
+    if occasion:
+        context_lines.append(f"Occasion: {occasion}")
+    if weather:
+        context_lines.append(f"Weather: {weather}")
+    if vibe:
+        context_lines.append(f"Vibe: {vibe}")
+    if notes:
+        context_lines.append(f"Additional notes: {notes}")
+    context_section = "\n".join(context_lines) if context_lines else "No specific context provided."
+
+    wardrobe_section = (
+        f"\n\nAvailable wardrobe items:\n{json.dumps(wardrobe_for_prompt, indent=2)}"
+        if wardrobe_for_prompt
+        else "\n\nWardrobe: empty — all pieces will need to be purchased."
+    )
+
+    system = (
+        "You are a personal stylist. Design a complete outfit concept based on the "
+        "user's context (occasion, weather, vibe) by selecting pieces from their wardrobe "
+        "where possible and identifying any gaps. "
+        "Return ONLY valid JSON with exactly this schema (no markdown fences, no extra keys):\n"
+        '{\n'
+        '  "title": "<short outfit name, e.g. \'Relaxed Downtown\'>",\n'
+        '  "summary": "<2-3 sentence description of the outfit and why it works>",\n'
+        '  "wardrobe_pieces": [\n'
+        '    { "item_id": "<UUID from available wardrobe>", "role": "<category>", "reason": "<one sentence why>" }\n'
+        '  ],\n'
+        '  "missing_pieces": [\n'
+        '    { "role": "<category>", "description": "<specific item needed>" }\n'
+        '  ]\n'
+        '}\n'
+        "Rules:\n"
+        "- Select wardrobe items by their exact id (UUID) field from the available wardrobe.\n"
+        "- Only add missing_pieces for gaps you cannot fill from the available wardrobe.\n"
+        "- Let the occasion/vibe/weather determine the number of pieces — avoid a rigid template.\n"
+        "- If wardrobe is empty or no items fit, put all pieces in missing_pieces."
+    )
+
+    user_msg = (
+        context_section
+        + profile_context
+        + wardrobe_section
+        + "\n\nDesign a complete outfit for this context."
+    )
+
+    try:
+        msg = anthropic_client.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=1024,
+            system=system,
+            messages=[{"role": "user", "content": user_msg}],
+            timeout=45,
+        )
+        result = json.loads(_strip_fences(msg.content[0].text))
+    except json.JSONDecodeError:
+        logger.warning("generate_look: Claude returned non-JSON")
+        return jsonify({"error": "Claude returned non-JSON response"}), 502
+    except anthropic.APIError as exc:
+        logger.error("generate_look: Claude API error: %s", exc)
+        return jsonify({"error": f"Claude API error: {exc}"}), 502
+    except Exception as exc:
+        logger.error("generate_look failed: %s", exc)
+        return jsonify({"error": str(exc)}), 500
+
+    # Enrich missing pieces with product search (non-fatal per piece)
+    if result.get("missing_pieces"):
+        budget_suffix = ""
+        if isinstance(profile, dict):
+            budget = profile.get("budget_max_usd")
+            if budget:
+                budget_suffix = f" under ${budget}"
+
+        # Synthetic analysis context for annotation
+        look_analysis = {
+            "style_tags": [t for t in [vibe, occasion] if t],
+            "summary": result.get("summary", ""),
+        }
+
+        enriched: list[dict] = []
+        for piece in result["missing_pieces"]:
+            piece_copy = dict(piece)
+            desc = piece.get("description", "") or piece.get("role", "")
+            query = desc + budget_suffix
+            try:
+                products = search_products(query)[:2]
+                if products:
+                    try:
+                        products = annotate_recommendations(look_analysis, products, profile)
+                    except Exception as ann_exc:
+                        logger.warning("generate_look: annotation failed for '%s': %s", query, ann_exc)
+            except Exception as search_exc:
+                logger.warning("generate_look: search failed for '%s': %s", query, search_exc)
+                products = []
+            piece_copy["products"] = products
+            enriched.append(piece_copy)
+
+        result["missing_pieces"] = enriched
+
+    # Include full wardrobe rows so frontend can display images/details
+    result["wardrobe_items"] = wardrobe_items
+
+    logger.info("generate_look completed for user %s", user_id)
+    return jsonify(result), 200
+
+
+# ---------------------------------------------------------------------------
+# Outfit comparison endpoint
+# ---------------------------------------------------------------------------
+
+def _resolve_outfit_for_compare(
+    outfit_input: dict,
+    label: str,
+    user_supabase: "Client",
+    user_id: str,
+    token: str,
+) -> tuple[dict | None, tuple | None]:
+    """
+    Resolve one outfit slot to an analysis dict.
+
+    Returns (analysis_dict, None) on success or (None, error_response_tuple) on failure.
+    analysis_id path: fetch from style_analyses (RLS-enforced).
+    image_url path: run full vision pipeline and save to history.
+    """
+    if not isinstance(outfit_input, dict):
+        return None, (jsonify({"error": f"{label} must be an object"}), 400)
+
+    analysis_id = outfit_input.get("analysis_id")
+    image_url = outfit_input.get("image_url")
+
+    if not analysis_id and not image_url:
+        return None, (jsonify({"error": f"{label} must have analysis_id or image_url"}), 400)
+    if analysis_id and image_url:
+        return None, (jsonify({"error": f"{label} must have only one of analysis_id or image_url"}), 400)
+
+    # --- fetch existing analysis by ID ---
+    if analysis_id:
+        try:
+            resp = (
+                user_supabase.table("style_analyses")
+                .select("id,image_url,colors,silhouettes,style_tags,summary")
+                .eq("id", analysis_id)
+                .eq("user_id", user_id)
+                .limit(1)
+                .execute()
+            )
+        except Exception as exc:
+            logger.error("compare: failed to fetch %s (id=%s): %s", label, analysis_id, exc)
+            return None, (jsonify({"error": f"Failed to fetch {label}"}), 500)
+        if not resp.data:
+            return None, (jsonify({"error": f"{label} analysis not found"}), 400)
+        return resp.data[0], None
+
+    # --- fresh image URL path ---
+    safe_url, url_error = _safe_image_url(image_url)
+    if url_error:
+        return None, (jsonify({"error": f"Invalid {label} image_url: {url_error}"}), 400)
+
+    try:
+        img_resp = req_lib.get(safe_url, timeout=15)
+        img_resp.raise_for_status()
+        content_length = int(img_resp.headers.get("Content-Length", 0))
+        if content_length > MAX_UPLOAD_BYTES:
+            return None, (jsonify({"error": f"{label} image too large (maximum 10 MB)"}), 413)
+        image_bytes = img_resp.content
+        if len(image_bytes) > MAX_UPLOAD_BYTES:
+            return None, (jsonify({"error": f"{label} image too large (maximum 10 MB)"}), 413)
+        media_type = img_resp.headers.get("Content-Type", "image/jpeg").split(";")[0]
+    except req_lib.exceptions.Timeout:
+        return None, (jsonify({"error": f"Timed out fetching {label} image"}), 408)
+    except req_lib.exceptions.RequestException as exc:
+        return None, (jsonify({"error": f"Failed to fetch {label} image: {exc}"}), 400)
+
+    image_bytes, media_type = _compress_image_bytes(image_bytes, media_type)
+    image_data_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+
+    vision_system = (
+        "You are an expert fashion stylist. "
+        "Analyse the clothing/outfit in the provided image and respond ONLY with "
+        "valid JSON matching exactly this schema (no markdown fences, no extra keys):\n"
+        '{\n'
+        '  "colors": ["<color1>", ...],\n'
+        '  "silhouettes": ["<silhouette1>", ...],\n'
+        '  "style_tags": ["<tag1>", ...],\n'
+        '  "summary": "<one-paragraph style summary>"\n'
+        '}'
+    )
+
+    try:
+        msg = anthropic_client.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=1024,
+            system=vision_system,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": media_type,
+                            "data": image_data_b64,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": "Analyse this outfit and return the structured JSON.",
+                    },
+                ],
+            }],
+        )
+        analysis_result = json.loads(_strip_fences(msg.content[0].text))
+    except json.JSONDecodeError:
+        logger.warning("compare: Claude non-JSON for %s vision", label)
+        return None, (jsonify({"error": f"Claude returned non-JSON for {label}"}), 502)
+    except anthropic.APIError as exc:
+        logger.error("compare: Claude API error for %s vision: %s", label, exc)
+        return None, (jsonify({"error": f"Claude API error for {label}: {exc}"}), 502)
+
+    saved_id = save_analysis(user_id, image_url, analysis_result, token)
+    if saved_id:
+        analysis_result["id"] = saved_id
+    analysis_result["image_url"] = image_url
+    return analysis_result, None
+
+
+@app.route("/api/compare", methods=["POST"])
+def compare_outfits():
+    """
+    Compare two outfits with Claude and return a structured verdict.
+
+    Requires: Authorization: Bearer <access_token>
+    Request JSON:
+      {
+        "outfit_a": { "analysis_id": "..." | "image_url": "..." },
+        "outfit_b": { "analysis_id": "..." | "image_url": "..." },
+        "occasion": "optional string"
+      }
+    Response JSON:
+      {
+        "comparison": { verdict, verdict_reason, outfit_a, outfit_b, contextual_notes },
+        "outfit_a": { id, image_url, colors, silhouettes, style_tags, summary },
+        "outfit_b": { ... }
+      }
+    """
+    token, err = _require_token()
+    if err:
+        return err
+
+    try:
+        user_supabase: Client = create_client(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY,
+            options=ClientOptions(headers={"Authorization": f"Bearer {token}"}),
+        )
+        user_resp = user_supabase.auth.get_user(token)
+        user_id = user_resp.user.id
+    except Exception as exc:
+        logger.warning("compare_outfits: token validation failed: %s", exc)
+        return jsonify({"error": "Invalid or expired token"}), 401
+
+    body = request.get_json(silent=True) or {}
+    outfit_a_input = body.get("outfit_a")
+    outfit_b_input = body.get("outfit_b")
+    occasion = (body.get("occasion") or "").strip()
+
+    if outfit_a_input is None or outfit_b_input is None:
+        return jsonify({"error": "Both outfit_a and outfit_b are required"}), 400
+
+    analysis_a, err_a = _resolve_outfit_for_compare(
+        outfit_a_input, "outfit_a", user_supabase, user_id, token
+    )
+    if err_a:
+        return err_a
+
+    analysis_b, err_b = _resolve_outfit_for_compare(
+        outfit_b_input, "outfit_b", user_supabase, user_id, token
+    )
+    if err_b:
+        return err_b
+
+    # Fetch user profile — non-fatal
+    profile = None
+    try:
+        profile = get_user_profile(user_id, token)
+    except Exception as exc:
+        logger.warning("compare_outfits: profile fetch failed: %s", exc)
+
+    profile_context = ""
+    if profile:
+        parts = []
+        if profile.get("gender"):
+            parts.append(f"gender: {profile['gender']}")
+        if profile.get("age_range"):
+            parts.append(f"age range: {profile['age_range']}")
+        if profile.get("preferred_styles"):
+            parts.append(f"preferred styles: {', '.join(profile['preferred_styles'])}")
+        if profile.get("occasions"):
+            parts.append(f"typical occasions: {', '.join(profile['occasions'])}")
+        if parts:
+            profile_context = "User context: " + "; ".join(parts) + ".\n\n"
+
+    occasion_context = f"Occasion: {occasion}\n\n" if occasion else ""
+
+    _ANALYSIS_KEYS = ("colors", "silhouettes", "style_tags", "summary")
+    comparison_system = (
+        profile_context
+        + "You are an expert fashion stylist comparing two outfits. "
+        "Respond ONLY with valid JSON matching exactly this schema "
+        "(no markdown fences, no extra keys):\n"
+        '{\n'
+        '  "verdict": "A",\n'
+        '  "verdict_reason": "short one-sentence summary",\n'
+        '  "outfit_a": {\n'
+        '    "strengths": ["..."],\n'
+        '    "concerns": ["..."],\n'
+        '    "best_for": "short phrase"\n'
+        '  },\n'
+        '  "outfit_b": {\n'
+        '    "strengths": ["..."],\n'
+        '    "concerns": ["..."],\n'
+        '    "best_for": "short phrase"\n'
+        '  },\n'
+        '  "contextual_notes": "2-3 sentences of additional reasoning"\n'
+        '}\n'
+        'verdict must be exactly "A", "B", or "TIE".'
+    )
+
+    user_msg = (
+        occasion_context
+        + "Outfit A:\n"
+        + json.dumps({k: analysis_a.get(k) for k in _ANALYSIS_KEYS}, indent=2)
+        + "\n\nOutfit B:\n"
+        + json.dumps({k: analysis_b.get(k) for k in _ANALYSIS_KEYS}, indent=2)
+        + "\n\nCompare these two outfits and return the structured JSON comparison."
+    )
+
+    try:
+        msg = anthropic_client.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=1024,
+            system=comparison_system,
+            messages=[{"role": "user", "content": user_msg}],
+        )
+        comparison = json.loads(_strip_fences(msg.content[0].text))
+    except json.JSONDecodeError:
+        logger.warning("compare_outfits: Claude non-JSON for comparison")
+        return jsonify({"error": "Claude returned non-JSON for comparison"}), 502
+    except anthropic.APIError as exc:
+        logger.error("compare_outfits: Claude API error: %s", exc)
+        return jsonify({"error": f"Claude API error: {exc}"}), 502
+    except Exception as exc:
+        logger.error("compare_outfits: unexpected error: %s", exc)
+        return jsonify({"error": str(exc)}), 500
+
+    logger.info("Outfit comparison completed for user %s", user_id)
+    return jsonify({
+        "comparison": comparison,
+        "outfit_a": analysis_a,
+        "outfit_b": analysis_b,
+    }), 200
+
+
+# ---------------------------------------------------------------------------
 # Health check
 # ---------------------------------------------------------------------------
 

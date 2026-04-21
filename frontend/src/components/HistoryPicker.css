@@ -1,0 +1,112 @@
+/* HistoryPicker.css */
+
+.history-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.72);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.history-picker-modal {
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-heavy) solid var(--ns-border);
+  width: min(640px, 92vw);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  border-bottom: var(--ns-border-width) solid var(--ns-border);
+}
+
+.history-picker-title {
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ns-ink);
+}
+
+.history-picker-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--ns-ink-muted);
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.history-picker-close:hover {
+  color: var(--ns-ink);
+}
+
+.history-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1px;
+  overflow-y: auto;
+  padding: 1px;
+  background: var(--ns-border-subtle);
+}
+
+.history-picker-item {
+  background: var(--ns-bg-alt);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  transition: outline 0.1s;
+}
+
+.history-picker-item:hover {
+  outline: var(--ns-border-heavy) solid var(--ns-accent);
+  outline-offset: -3px;
+  z-index: 1;
+}
+
+.history-picker-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+
+.history-picker-no-img {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--ns-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ns-font-mono);
+  font-size: 0.65rem;
+  color: var(--ns-ink-muted);
+  letter-spacing: 0.08em;
+}
+
+.history-picker-date {
+  font-family: var(--ns-font-mono);
+  font-size: 0.65rem;
+  color: var(--ns-ink-muted);
+  text-align: center;
+  padding: 0.35rem 0;
+  background: var(--ns-bg-alt);
+}
+
+.history-picker-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--ns-ink-muted);
+  font-size: 0.875rem;
+}

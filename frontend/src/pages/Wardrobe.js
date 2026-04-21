@@ -16,10 +16,12 @@ import {
   deriveStyleFromWardrobe,
   applyDerivedStyle,
   buildOutfit,
+  runStyleAudit,
 } from "../services/api";
 import WardrobeCard from "../components/WardrobeCard";
 import WardrobeEditModal from "../components/WardrobeEditModal";
 import OutfitResultModal from "../components/OutfitResultModal";
+import StyleAuditModal from "../components/StyleAuditModal";
 import "./Wardrobe.css";
 
 const FILTERS = ["all", "owned", "wishlist"];
@@ -52,6 +54,12 @@ export default function Wardrobe() {
   const [buildingOutfit, setBuildingOutfit] = useState(false);
   const [outfitResult, setOutfitResult] = useState(null);
   const [outfitAnchorItem, setOutfitAnchorItem] = useState(null);
+
+  // Style audit
+  const [auditOpen, setAuditOpen] = useState(false);
+  const [runningAudit, setRunningAudit] = useState(false);
+  const [auditResult, setAuditResult] = useState(null);
+  const [auditError, setAuditError] = useState("");
 
   // ---------------------------------------------------------------------------
   // Load items
@@ -178,6 +186,24 @@ export default function Wardrobe() {
   }
 
   // ---------------------------------------------------------------------------
+  // Style audit
+  // ---------------------------------------------------------------------------
+  async function handleRunAudit() {
+    setAuditOpen(true);
+    setAuditResult(null);
+    setAuditError("");
+    setRunningAudit(true);
+    try {
+      const data = await runStyleAudit(token);
+      setAuditResult(data);
+    } catch (err) {
+      setAuditError(err.message || "Audit failed.");
+    } finally {
+      setRunningAudit(false);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
   return (
@@ -189,6 +215,8 @@ export default function Wardrobe() {
           <Link to="/" className="btn-secondary">Upload</Link>
           <Link to="/history" className="btn-secondary">History</Link>
           <Link to="/profile" className="btn-secondary">Profile</Link>
+          <Link to="/compare" className="btn-secondary">Compare</Link>
+          <Link to="/looks" className="btn-secondary">Generate</Link>
           <Link to="/logout" className="btn-outline">Sign Out</Link>
         </nav>
       </header>
@@ -274,6 +302,15 @@ export default function Wardrobe() {
             disabled={derivingStyle}
           >
             {derivingStyle ? "Analysing…" : "✨ Derive My Style"}
+          </button>
+
+          <button
+            className="btn-secondary"
+            onClick={handleRunAudit}
+            disabled={items.length < 5}
+            title={items.length < 5 ? "Add at least 5 items to run an audit" : undefined}
+          >
+            Run Style Audit
           </button>
         </div>
 
@@ -381,6 +418,16 @@ export default function Wardrobe() {
           wardrobeItems={items}
           result={outfitResult}
           onClose={() => { setOutfitResult(null); setOutfitAnchorItem(null); }}
+        />
+      )}
+
+      {/* ---- Style audit modal ---- */}
+      {auditOpen && (
+        <StyleAuditModal
+          audit={auditResult}
+          runningAudit={runningAudit}
+          auditError={auditError}
+          onClose={() => setAuditOpen(false)}
         />
       )}
     </div>
