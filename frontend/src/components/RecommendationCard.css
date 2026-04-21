@@ -1,23 +1,25 @@
 /* RecommendationCard.css */
 
 .rec-card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-border);
+  border-top: 3px solid transparent;
+  border-radius: var(--ns-radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.1s, border-top-color 0.1s;
 }
 
 .rec-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(120, 60, 160, 0.15);
+  transform: translateY(-2px);
+  border-top-color: var(--ns-accent);
 }
 
 .rec-image-wrap {
   height: 200px;
   overflow: hidden;
+  background: var(--ns-bg);
 }
 
 .rec-image {
@@ -32,45 +34,55 @@
   flex-direction: column;
   gap: 0.3rem;
   flex: 1;
+  border-top: var(--ns-border-width) solid var(--ns-border-subtle);
 }
 
 .rec-image-placeholder {
   width: 100%;
   height: 100%;
-  background: #f3f4f6;
+  background: var(--ns-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
-  font-size: 0.85rem;
+  color: var(--ns-ink-muted);
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .rec-name {
   font-weight: 600;
-  font-size: 0.95rem;
-  color: #111827;
+  font-size: 0.88rem;
+  color: var(--ns-ink);
   margin: 0;
+  line-height: 1.35;
 }
 
 .rec-retailer {
-  font-size: 0.78rem;
-  color: #6b7280;
+  font-family: var(--ns-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ns-ink-muted);
   margin: 0;
 }
 
 .rec-price {
-  color: #7c3aed;
+  font-family: var(--ns-font-mono);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  color: var(--ns-ink);
   margin: 0;
+  letter-spacing: 0.02em;
 }
 
 .rec-why {
-  font-size: 0.8rem;
-  color: #4b5563;
+  font-size: 0.78rem;
+  color: var(--ns-ink-muted);
   font-style: italic;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .rec-btn {
@@ -78,6 +90,6 @@
   display: inline-block;
   text-align: center;
   text-decoration: none;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
+  padding: 0.45rem 1rem;
+  font-size: 0.78rem;
 }

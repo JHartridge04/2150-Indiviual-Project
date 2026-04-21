@@ -2,44 +2,57 @@
 
 .profile-container {
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--ns-bg);
 }
 
 .profile-main {
   max-width: 720px;
   margin: 0 auto;
-  padding: 2rem 1rem 5rem;
+  padding: 2.5rem 2rem 5rem;
 }
 
 .profile-heading {
-  font-size: 1.4rem;
-  color: #111827;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--ns-ink);
   margin-bottom: 0.25rem;
 }
 
 .profile-subtitle {
-  color: #6b7280;
-  font-size: 0.9rem;
+  color: var(--ns-ink-muted);
+  font-size: 0.85rem;
   margin-bottom: 2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: var(--ns-border-width) solid var(--ns-border-subtle);
 }
 
 /* ---- Card sections ---- */
 .profile-card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-border);
+  border-radius: var(--ns-radius);
   padding: 1.5rem 1.75rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  border-bottom: none;
+}
+
+.profile-card:last-of-type {
+  border-bottom: var(--ns-border-width) solid var(--ns-border);
 }
 
 .card-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #111827;
+  font-family: var(--ns-font-display);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ns-ink);
   margin: 0 0 0.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: var(--ns-border-width) solid var(--ns-border-subtle);
 }
 
 /* ---- Field primitives ---- */
@@ -57,27 +70,36 @@
 }
 
 .field-label {
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #374151;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ns-ink);
 }
 
 .field-input {
-  border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
+  border: var(--ns-border-width) solid var(--ns-border-subtle);
+  border-radius: var(--ns-radius);
   padding: 0.5rem 0.75rem;
   font-size: 0.9rem;
-  color: #111827;
-  background: #fff;
+  font-family: var(--ns-font-body);
+  color: var(--ns-ink);
+  background: var(--ns-bg-alt);
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 0.15s;
+  transition: border-color 0.1s;
 }
 
 .field-input:focus {
   outline: none;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+  border-color: var(--ns-border);
+  box-shadow: none;
+}
+
+.field-input::placeholder {
+  font-family: var(--ns-font-mono);
+  color: var(--ns-ink-muted);
+  font-size: 0.82rem;
 }
 
 /* ---- Chip input ---- */
@@ -86,82 +108,97 @@
   flex-wrap: wrap;
   gap: 0.4rem;
   align-items: center;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
+  border: var(--ns-border-width) solid var(--ns-border-subtle);
+  border-radius: var(--ns-radius);
   padding: 0.4rem 0.6rem;
   min-height: 42px;
-  background: #fff;
-  transition: border-color 0.15s;
+  background: var(--ns-bg-alt);
+  transition: border-color 0.1s;
 }
 
 .chip-wrap:focus-within {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+  border-color: var(--ns-border);
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  background: #ede9fe;
-  color: #5b21b6;
-  border-radius: 999px;
-  padding: 0.2rem 0.55rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+  background: var(--ns-ink);
+  color: var(--ns-bg-alt);
+  border-radius: var(--ns-radius);
+  border: 1px solid var(--ns-ink);
+  padding: 0.18rem 0.45rem;
+  font-family: var(--ns-font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .chip-remove {
   background: none;
   border: none;
-  color: #7c3aed;
+  color: var(--ns-bg-alt);
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1;
   padding: 0;
+  opacity: 0.7;
 }
 
 .chip-remove:hover {
-  color: #dc2626;
+  color: var(--ns-accent);
+  opacity: 1;
 }
 
 .chip-input {
   border: none;
   outline: none;
-  font-size: 0.88rem;
+  font-family: var(--ns-font-mono);
+  font-size: 0.82rem;
   flex: 1;
   min-width: 140px;
   background: transparent;
-  color: #111827;
+  color: var(--ns-ink);
 }
 
 .chip-input::placeholder {
-  color: #9ca3af;
+  color: var(--ns-ink-muted);
 }
 
 /* ---- Save button & messages ---- */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .profile-save {
   width: 100%;
-  margin-top: 0.5rem;
+  margin-top: 0;
   padding: 0.75rem;
-  font-size: 1rem;
+  font-size: 0.85rem;
+  border-top: none;
 }
 
 .profile-message {
-  border-radius: 8px;
+  border-radius: var(--ns-radius);
   padding: 0.65rem 0.9rem;
-  font-size: 0.9rem;
+  font-family: var(--ns-font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
   margin-bottom: 0.25rem;
 }
 
 .profile-message--success {
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  color: #16a34a;
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-success);
+  color: var(--ns-success);
 }
 
 .profile-message--error {
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  color: #dc2626;
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-danger);
+  color: var(--ns-danger);
 }

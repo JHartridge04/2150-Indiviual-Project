@@ -1,31 +1,38 @@
+/* Wardrobe.css */
+
 .wardrobe-container {
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--ns-bg);
 }
 
 .wardrobe-main {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1rem 5rem;
+  padding: 2.5rem 2rem 5rem;
 }
 
 .wardrobe-heading {
-  font-size: 1.4rem;
-  color: #111827;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--ns-ink);
   margin-bottom: 0.25rem;
 }
 
 .wardrobe-subtitle {
-  color: #6b7280;
-  font-size: 0.9rem;
-  margin-bottom: 1.75rem;
+  color: var(--ns-ink-muted);
+  font-family: var(--ns-font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: var(--ns-border-width) solid var(--ns-border-subtle);
 }
 
 /* ---- Upload card ---- */
 .wardrobe-upload-card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-border);
+  border-radius: var(--ns-radius);
   padding: 1.5rem 1.75rem;
   margin-bottom: 1.5rem;
 }
@@ -41,22 +48,25 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  border: 2px dashed #d1d5db;
-  border-radius: 10px;
+  border: var(--ns-border-width) dashed var(--ns-border-subtle);
+  border-radius: var(--ns-radius);
   padding: 1rem 1.25rem;
   cursor: pointer;
-  color: #6b7280;
-  font-size: 0.9rem;
-  transition: border-color 0.15s;
+  color: var(--ns-ink-muted);
+  font-family: var(--ns-font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  transition: border-color 0.1s;
 }
 
 .wardrobe-file-zone:hover {
-  border-color: #7c3aed;
-  color: #5b21b6;
+  border-color: var(--ns-border);
+  color: var(--ns-ink);
 }
 
 .wardrobe-file-icon {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
+  opacity: 0.6;
 }
 
 .wardrobe-ownership-row {
@@ -70,28 +80,33 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.88rem;
-  color: #374151;
+  font-family: var(--ns-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ns-ink);
   cursor: pointer;
 }
 
 .wardrobe-upload-msg {
-  border-radius: 8px;
+  border-radius: var(--ns-radius);
   padding: 0.55rem 0.8rem;
-  font-size: 0.88rem;
+  font-family: var(--ns-font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
   margin: 0;
 }
 
 .wardrobe-upload-msg--success {
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  color: #16a34a;
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-success);
+  color: var(--ns-success);
 }
 
 .wardrobe-upload-msg--error {
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  color: #dc2626;
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-danger);
+  color: var(--ns-danger);
 }
 
 /* ---- Toolbar ---- */
@@ -101,35 +116,44 @@
   justify-content: space-between;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: var(--ns-border-width) solid var(--ns-border-subtle);
 }
 
 .wardrobe-filters {
   display: flex;
-  gap: 0.4rem;
+  gap: 0;
 }
 
 .wardrobe-filter-btn {
-  padding: 0.45rem 1rem;
-  border-radius: 999px;
-  border: 1.5px solid #e5e7eb;
-  background: #fff;
-  color: #374151;
-  font-size: 0.85rem;
-  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--ns-radius);
+  border: var(--ns-border-width) solid var(--ns-border);
+  border-right: none;
+  background: var(--ns-bg-alt);
+  color: var(--ns-ink);
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.1s, color 0.1s;
+}
+
+.wardrobe-filter-btn:last-child {
+  border-right: var(--ns-border-width) solid var(--ns-border);
 }
 
 .wardrobe-filter-btn:hover {
-  border-color: #7c3aed;
-  color: #5b21b6;
+  background: var(--ns-ink);
+  color: var(--ns-bg-alt);
 }
 
 .wardrobe-filter-btn--active {
-  background: #7c3aed;
-  border-color: #7c3aed;
-  color: #fff;
+  background: var(--ns-ink);
+  color: var(--ns-bg-alt);
 }
 
 .wardrobe-toolbar-actions {
@@ -142,14 +166,16 @@
 .wardrobe-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1rem;
+  gap: 1px;
+  background: var(--ns-border-subtle);
+  border: var(--ns-border-width) solid var(--ns-border);
 }
 
 /* ---- Derived style modal ---- */
 .wardrobe-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(10, 10, 10, 0.6);
   z-index: 200;
   display: flex;
   align-items: center;
@@ -158,9 +184,9 @@
 }
 
 .wardrobe-modal {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-heavy) solid var(--ns-border);
+  border-radius: var(--ns-radius);
   width: 100%;
   max-width: 480px;
   max-height: 85vh;
@@ -170,8 +196,8 @@
 }
 
 .derive-summary {
-  color: #374151;
-  font-size: 0.92rem;
+  color: var(--ns-ink);
+  font-size: 0.88rem;
   margin-bottom: 1rem;
   line-height: 1.55;
 }
@@ -182,9 +208,12 @@
 
 .derive-section strong {
   display: block;
-  font-size: 0.82rem;
-  color: #111827;
-  margin-bottom: 0.35rem;
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ns-ink);
+  margin-bottom: 0.4rem;
 }
 
 .derive-chips {
@@ -194,8 +223,10 @@
 }
 
 .derive-applied {
-  font-size: 0.9rem;
-  color: #16a34a;
+  font-family: var(--ns-font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  color: var(--ns-success);
   font-weight: 600;
   margin: 0.5rem 0 0;
 }

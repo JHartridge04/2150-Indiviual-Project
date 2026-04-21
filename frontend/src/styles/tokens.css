@@ -1,0 +1,30 @@
+:root {
+  /* Colors */
+  --ns-bg: #f4f4f2;
+  --ns-bg-alt: #ffffff;
+  --ns-ink: #0a0a0a;
+  --ns-ink-muted: #6a6a6a;
+  --ns-border: #0a0a0a;
+  --ns-border-subtle: #d4d4d2;
+  --ns-accent: #ff4500;
+  --ns-accent-ink: #ffffff;
+  --ns-danger: #c41e3a;
+  --ns-success: #1a7a3a;
+
+  /* Typography */
+  --ns-font-display: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ns-font-body: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ns-font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Spacing */
+  --ns-space-xs: 4px;
+  --ns-space-sm: 8px;
+  --ns-space-md: 16px;
+  --ns-space-lg: 24px;
+  --ns-space-xl: 40px;
+
+  /* Borders */
+  --ns-radius: 0;
+  --ns-border-width: 1.5px;
+  --ns-border-heavy: 3px;
+}

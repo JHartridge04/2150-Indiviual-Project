@@ -2,25 +2,26 @@
 
 .outfit-card {
   position: relative;
-  background: #fff;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-border);
+  border-top: 3px solid transparent;
+  border-radius: var(--ns-radius);
   cursor: pointer;
   padding: 0;
   overflow: hidden;
-  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+  transition: border-top-color 0.1s, transform 0.1s;
   text-align: left;
   width: 100%;
 }
 
 .outfit-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+  border-top-color: var(--ns-accent);
 }
 
 .outfit-card--selected {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+  border-top-color: var(--ns-accent);
+  outline: none;
 }
 
 .outfit-card-image {
@@ -33,41 +34,47 @@
 .outfit-card-placeholder {
   width: 100%;
   height: 180px;
-  background: #f3f4f6;
+  background: var(--ns-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
-  font-size: 0.85rem;
+  color: var(--ns-ink-muted);
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .outfit-card-body {
   padding: 0.6rem 0.75rem 0.7rem;
+  border-top: var(--ns-border-width) solid var(--ns-border-subtle);
 }
 
 .outfit-card-date {
-  font-size: 0.8rem;
-  color: #6b7280;
+  font-family: var(--ns-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  color: var(--ns-ink-muted);
 }
 
 .outfit-card-delete {
   position: absolute;
   top: 6px;
   right: 6px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-  font-size: 1rem;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--ns-radius);
+  border: var(--ns-border-width) solid var(--ns-bg-alt);
+  background: rgba(10, 10, 10, 0.7);
+  color: var(--ns-bg-alt);
+  font-size: 0.9rem;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
+  transition: opacity 0.1s, background 0.1s;
   padding: 0;
 }
 
@@ -77,5 +84,6 @@
 }
 
 .outfit-card-delete:hover {
-  background: #dc2626;
+  background: var(--ns-danger);
+  border-color: var(--ns-danger);
 }

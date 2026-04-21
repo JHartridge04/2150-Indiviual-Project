@@ -1,35 +1,43 @@
-/* Auth.css — shared styles for Login and Signup pages */
+/* Auth.css — shared styles for Login, Signup, ResetPassword */
 
 .auth-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f0ff 0%, #fff0f9 100%);
+  background: var(--ns-bg);
   padding: 1rem;
 }
 
 .auth-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(120, 60, 160, 0.12);
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-heavy) solid var(--ns-border);
+  border-radius: var(--ns-radius);
   padding: 2.5rem 2rem;
   width: 100%;
   max-width: 400px;
 }
 
 .auth-title {
-  font-size: 1.6rem;
-  color: #7c3aed;
-  margin-bottom: 0.25rem;
+  font-family: var(--ns-font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ns-ink);
+  margin-bottom: 0.2rem;
   text-align: center;
 }
 
 .auth-card h2 {
-  font-size: 1.2rem;
-  color: #374151;
-  margin-bottom: 1.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--ns-ink-muted);
+  margin-bottom: 1.75rem;
   text-align: center;
+  font-weight: 500;
+  font-family: var(--ns-font-mono);
+  text-transform: uppercase;
 }
 
 .auth-form {
@@ -39,87 +47,108 @@
 }
 
 .auth-form label {
-  font-size: 0.85rem;
+  font-family: var(--ns-font-body);
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #374151;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ns-ink);
 }
 
 .auth-form input {
   padding: 0.6rem 0.9rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 1rem;
+  border: var(--ns-border-width) solid var(--ns-border-subtle);
+  border-radius: var(--ns-radius);
+  font-size: 0.95rem;
+  font-family: var(--ns-font-body);
+  color: var(--ns-ink);
+  background: var(--ns-bg-alt);
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.1s;
+}
+
+.auth-form input::placeholder {
+  font-family: var(--ns-font-mono);
+  color: var(--ns-ink-muted);
+  font-size: 0.82rem;
 }
 
 .auth-form input:focus {
-  border-color: #7c3aed;
+  border-color: var(--ns-border);
+  box-shadow: none;
 }
 
 .auth-error {
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  color: #dc2626;
-  border-radius: 8px;
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-danger);
+  color: var(--ns-danger);
+  border-radius: var(--ns-radius);
   padding: 0.6rem 0.9rem;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   margin-bottom: 0.75rem;
 }
 
 .auth-success {
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  color: #166534;
-  border-radius: 8px;
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-success);
+  color: var(--ns-success);
+  border-radius: var(--ns-radius);
   padding: 0.75rem 0.9rem;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   margin-bottom: 1.25rem;
 }
 
 .auth-switch {
   text-align: center;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: #6b7280;
+  margin-top: 1.25rem;
+  font-size: 0.82rem;
+  color: var(--ns-ink-muted);
+  font-family: var(--ns-font-mono);
+  letter-spacing: 0.02em;
 }
 
 .auth-switch a {
-  color: #7c3aed;
-  font-weight: 600;
-  text-decoration: none;
+  color: var(--ns-ink);
+  font-weight: 500;
+  text-decoration: underline;
 }
 
 .auth-switch a:hover {
-  text-decoration: underline;
+  color: var(--ns-accent);
 }
 
+/* Forgot-password panel */
 .auth-forgot-btn {
   background: none;
   border: none;
-  color: #7c3aed;
-  font-size: 0.85rem;
-  font-weight: 600;
+  color: var(--ns-ink-muted);
+  font-family: var(--ns-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
   cursor: pointer;
   padding: 0;
   text-align: left;
-  margin-top: -0.25rem;
+  text-decoration: underline;
+  text-transform: uppercase;
+  margin-top: -0.15rem;
 }
 
 .auth-forgot-btn:hover {
-  text-decoration: underline;
+  color: var(--ns-accent);
 }
 
 .auth-forgot-panel {
   margin-top: 1rem;
   padding: 1rem;
-  background: #f5f0ff;
-  border-radius: 10px;
-  border: 1px solid #ede9fe;
+  background: var(--ns-bg);
+  border: var(--ns-border-width) solid var(--ns-border-subtle);
+  border-radius: var(--ns-radius);
 }
 
 .auth-forgot-msg {
-  font-size: 0.9rem;
-  color: #374151;
+  font-family: var(--ns-font-mono);
+  font-size: 0.8rem;
+  color: var(--ns-ink-muted);
+  letter-spacing: 0.02em;
   margin: 0;
 }

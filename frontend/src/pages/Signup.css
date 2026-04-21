@@ -1,10 +1,11 @@
-/* Inline password error shown on the signup form */
 .pw-error {
-  font-size: 0.85rem;
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  border-radius: 6px;
+  font-family: var(--ns-font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--ns-danger);
+  background: var(--ns-bg-alt);
+  border: var(--ns-border-width) solid var(--ns-danger);
+  border-radius: var(--ns-radius);
   padding: 0.4rem 0.6rem;
   margin: 0;
 }
