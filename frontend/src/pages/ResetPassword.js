@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import supabase from "../services/supabaseClient";
 import PasswordStrengthMeter, { passwordMeetsMinimum } from "../components/PasswordStrengthMeter";
+import AppHeader from "../components/AppHeader";
 import "./Auth.css";
 import "./ResetPassword.css";
 
@@ -47,7 +48,7 @@ export default function ResetPassword() {
     return (
       <div className="auth-container">
         <div className="auth-card">
-          <h1 className="auth-title">👗 Style Assistant</h1>
+          <AppHeader compact />
           <p className="rp-checking">Checking reset link…</p>
         </div>
       </div>
@@ -59,7 +60,7 @@ export default function ResetPassword() {
     return (
       <div className="auth-container">
         <div className="auth-card">
-          <h1 className="auth-title">👗 Style Assistant</h1>
+          <AppHeader compact />
           <div className="auth-error">This reset link is invalid or has expired.</div>
           <Link to="/login" className="btn-primary" style={{ display: "block", textAlign: "center", marginTop: "1rem" }}>
             Back to Sign In
@@ -74,7 +75,7 @@ export default function ResetPassword() {
     return (
       <div className="auth-container">
         <div className="auth-card">
-          <h1 className="auth-title">👗 Style Assistant</h1>
+          <AppHeader compact />
           <div className="auth-success">
             Password updated! Redirecting you to sign in…
           </div>
@@ -86,7 +87,7 @@ export default function ResetPassword() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1 className="auth-title">👗 Style Assistant</h1>
+        <AppHeader compact />
         <h2>Set New Password</h2>
 
         {error && <div className="auth-error">{error}</div>}

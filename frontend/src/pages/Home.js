@@ -11,6 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { uploadPhoto, analyzeStyle } from "../services/api";
 import StyleProfile from "../components/StyleProfile";
+import AppHeader from "../components/AppHeader";
 import "./Home.css";
 
 export default function Home() {
@@ -94,9 +95,9 @@ export default function Home() {
   // -------------------------------------------------------------------------
   return (
     <div className="home-container">
-      {/* Header */}
+      <AppHeader />
+      {/* Nav */}
       <header className="home-header">
-        <h1 className="app-title">👗 Style Assistant</h1>
         <nav className="home-nav">
           <span className="nav-email">{user?.email}</span>
           <Link to="/history" className="btn-secondary">History</Link>

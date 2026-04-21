@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { signUp } from "../services/api";
 import PasswordStrengthMeter, { passwordMeetsMinimum } from "../components/PasswordStrengthMeter";
+import AppHeader from "../components/AppHeader";
 import "./Auth.css";
 import "./Signup.css";
 
@@ -52,7 +53,7 @@ export default function Signup() {
     return (
       <div className="auth-container">
         <div className="auth-card">
-          <h1 className="auth-title">👗 Style Assistant</h1>
+          <AppHeader compact />
           <div className="auth-success">{message}</div>
           <Link to="/login" className="btn-primary" style={{ display: "block", textAlign: "center" }}>
             Go to Sign In
@@ -65,7 +66,7 @@ export default function Signup() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1 className="auth-title">👗 Style Assistant</h1>
+        <AppHeader compact />
         <h2>Create Account</h2>
 
         {error && <div className="auth-error">{error}</div>}

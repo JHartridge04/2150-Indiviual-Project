@@ -6,6 +6,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import AppHeader from "../components/AppHeader";
 import { useAuth } from "../context/AuthContext";
 import { getRecommendations, refreshRecommendations } from "../services/api";
 import RecommendationCard from "../components/RecommendationCard";
@@ -55,9 +56,8 @@ export default function Recommendations() {
 
   return (
     <div className="rec-container">
-      {/* Header */}
+      <AppHeader />
       <header className="home-header">
-        <h1 className="app-title">👗 Style Assistant</h1>
         <nav className="home-nav">
           <span className="nav-email">{user?.email}</span>
           <Link to="/" className="btn-secondary">Upload</Link>

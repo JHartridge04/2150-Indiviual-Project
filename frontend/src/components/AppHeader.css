@@ -1,0 +1,61 @@
+/* AppHeader.css */
+
+.app-header {
+  padding: 2.5rem 2rem 1.5rem;
+  border-bottom: var(--ns-border-heavy) solid var(--ns-border);
+  background: var(--ns-bg-alt);
+  margin-bottom: 2rem;
+}
+
+.app-header--compact {
+  padding: 1.75rem 2rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.app-header-wordmark {
+  font-family: var(--ns-font-display);
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ns-ink);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.app-header--compact .app-header-wordmark {
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+}
+
+.app-header-blurb {
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--ns-ink-muted);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.app-header--compact .app-header-blurb {
+  font-size: 0.65rem;
+}
+
+.app-header-rule {
+  border: none;
+  border-top: var(--ns-border-width) solid var(--ns-border-subtle);
+  margin: 1rem 0 0.6rem;
+}
+
+.app-header-meta {
+  font-family: var(--ns-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--ns-ink-muted);
+  text-transform: uppercase;
+}
+
+.app-header-dot {
+  color: var(--ns-accent);
+}

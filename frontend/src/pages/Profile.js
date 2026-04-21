@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getProfile, updateProfile, changePassword } from "../services/api";
 import PasswordStrengthMeter, { passwordMeetsMinimum } from "../components/PasswordStrengthMeter";
+import AppHeader from "../components/AppHeader";
 import "./Profile.css";
 
 // ---------------------------------------------------------------------------
@@ -192,8 +193,8 @@ export default function Profile() {
   // -------------------------------------------------------------------------
   return (
     <div className="profile-container">
+      <AppHeader />
       <header className="home-header">
-        <h1 className="app-title">👗 Style Assistant</h1>
         <nav className="home-nav">
           <span className="nav-email">{user?.email}</span>
           <Link to="/" className="btn-secondary">Upload</Link>

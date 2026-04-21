@@ -7,6 +7,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import AppHeader from "../components/AppHeader";
 import {
   uploadWardrobeItems,
   getWardrobe,
@@ -181,8 +182,8 @@ export default function Wardrobe() {
   // ---------------------------------------------------------------------------
   return (
     <div className="wardrobe-container">
+      <AppHeader />
       <header className="home-header">
-        <h1 className="app-title">👗 Style Assistant</h1>
         <nav className="home-nav">
           <span className="nav-email">{user?.email}</span>
           <Link to="/" className="btn-secondary">Upload</Link>

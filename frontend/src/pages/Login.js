@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import supabase from "../services/supabaseClient";
+import AppHeader from "../components/AppHeader";
 import "./Auth.css";
 
 export default function Login() {
@@ -50,7 +51,7 @@ export default function Login() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1 className="auth-title">👗 Style Assistant</h1>
+        <AppHeader compact />
         <h2>Sign In</h2>
 
         {error && <div className="auth-error">{error}</div>}
