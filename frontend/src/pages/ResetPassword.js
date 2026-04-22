@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import supabase from "../services/supabaseClient";
 import PasswordStrengthMeter, { passwordMeetsMinimum } from "../components/PasswordStrengthMeter";
 import AppHeader from "../components/AppHeader";
+import ErrorBanner from "../components/ErrorBanner";
 import "./Auth.css";
 import "./ResetPassword.css";
 
@@ -61,7 +62,7 @@ export default function ResetPassword() {
       <div className="auth-container">
         <div className="auth-card">
           <AppHeader compact />
-          <div className="auth-error">This reset link is invalid or has expired.</div>
+          <ErrorBanner message="This reset link is invalid or has expired." context="SYS/AUTH" />
           <Link to="/login" className="btn-primary" style={{ display: "block", textAlign: "center", marginTop: "1rem" }}>
             Back to Sign In
           </Link>
@@ -90,7 +91,7 @@ export default function ResetPassword() {
         <AppHeader compact />
         <h2>Set New Password</h2>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error && <ErrorBanner message={error} context="SYS/AUTH" />}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label htmlFor="rp-new">New password</label>

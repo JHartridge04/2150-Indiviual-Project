@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { signUp } from "../services/api";
 import PasswordStrengthMeter, { passwordMeetsMinimum } from "../components/PasswordStrengthMeter";
 import AppHeader from "../components/AppHeader";
+import ErrorBanner from "../components/ErrorBanner";
 import "./Auth.css";
 import "./Signup.css";
 
@@ -69,7 +70,7 @@ export default function Signup() {
         <AppHeader compact />
         <h2>Create Account</h2>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error && <ErrorBanner message={error} context="SYS/AUTH" />}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label htmlFor="email">Email</label>

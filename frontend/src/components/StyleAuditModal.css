@@ -242,6 +242,166 @@
   padding: 0.3rem 0.5rem;
 }
 
+/* ---- Audit gate ---- */
+.sam-gate {
+  padding: 0.25rem 0 0.5rem;
+}
+
+.sam-gate-sys {
+  font-family: var(--ns-font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ns-ink-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.sam-gate-sys-accent { color: var(--ns-accent); font-weight: 500; }
+.sam-gate-sys-sep    { color: #c0c0c0; }
+
+.sam-gate-headline {
+  font-family: var(--ns-font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  color: var(--ns-ink);
+  margin: 0 0 12px;
+}
+
+.sam-gate-body {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ns-ink-muted);
+  margin: 0 0 20px;
+}
+
+.sam-gate-body strong {
+  color: var(--ns-ink);
+  font-weight: 600;
+}
+
+.sam-gate-counter {
+  border: 1.5px solid var(--ns-border);
+  background: var(--ns-bg);
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.sam-gate-counter-label {
+  font-family: var(--ns-font-mono);
+  font-size: 0.58rem;
+  color: var(--ns-ink-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+
+.sam-gate-blocks {
+  font-family: var(--ns-font-mono);
+  font-size: 1.25rem;
+  letter-spacing: 0.12em;
+  color: var(--ns-ink);
+  margin-bottom: 8px;
+}
+
+.sam-gate-counts {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 9px;
+}
+
+.sam-gate-count-item {
+  font-family: var(--ns-font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: var(--ns-ink-muted);
+}
+
+.sam-gate-count-val {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ns-ink);
+}
+
+.sam-gate-count-val--accent { color: var(--ns-accent); }
+
+.sam-gate-track {
+  height: 3px;
+  background: var(--ns-border-subtle);
+  position: relative;
+}
+
+.sam-gate-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--ns-accent);
+  transition: width 0.3s;
+}
+
+.sam-gate-remaining {
+  margin-top: 5px;
+  font-family: var(--ns-font-mono);
+  font-size: 0.55rem;
+  color: var(--ns-border-subtle);
+  letter-spacing: 0.06em;
+}
+
+.sam-gate-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ns-ink);
+  color: var(--ns-bg-alt);
+  border: 1.5px solid var(--ns-ink);
+  padding: 9px 16px;
+  font-family: var(--ns-font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.sam-gate-cta:hover {
+  background: var(--ns-accent);
+  border-color: var(--ns-accent);
+  color: #fff;
+}
+
+.sam-gate-cta-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--ns-accent);
+  flex-shrink: 0;
+}
+
+.sam-gate-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--ns-border-subtle);
+}
+
+.sam-gate-footer-ref,
+.sam-gate-footer-ver {
+  font-family: var(--ns-font-mono);
+  font-size: 0.55rem;
+  color: var(--ns-border-subtle);
+  letter-spacing: 0.08em;
+}
+
 /* ---- Audit skeleton ---- */
 
 .sam-skel-wrap {

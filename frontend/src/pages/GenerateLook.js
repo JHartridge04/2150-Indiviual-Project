@@ -6,6 +6,7 @@ import AppHeader from "../components/AppHeader";
 import RecommendationCard from "../components/RecommendationCard";
 import Skeleton from "../components/Skeleton";
 import ProgressBar from "../components/ProgressBar";
+import ErrorBanner from "../components/ErrorBanner";
 import "./GenerateLook.css";
 
 const LOOK_MSGS = [
@@ -147,7 +148,7 @@ export default function GenerateLook() {
       <main className="gl-main">
         <h2 className="gl-heading">Generate a Look</h2>
 
-        {error && <div className="error-banner">{error}</div>}
+        {error && <ErrorBanner message={error} context="SYS/LOOK" onRetry={handleGenerate} />}
 
         {result ? (
           <LookResult
@@ -301,7 +302,7 @@ function LookResult({ result, generatedAt, onReset }) {
       </div>
 
       {/* Wardrobe pieces */}
-      {result.wardrobe_pieces?.length > 0 && (
+      {result.wardrobe_pieces?.length > 0 ? (
         <div className="gl-result-section">
           <h4 className="gl-section-title">YOUR WARDROBE</h4>
           <div className="gl-pieces-grid">
@@ -327,6 +328,22 @@ function LookResult({ result, generatedAt, onReset }) {
               );
             })}
           </div>
+        </div>
+      ) : (
+        <div className="gl-no-wardrobe-note">
+          <span className="gl-no-wardrobe-sys">
+            <span className="gl-no-wardrobe-sys-accent">SYS/LOOK</span>
+            <span className="gl-no-wardrobe-sys-sep">›</span>
+            NO_WARDROBE_PIECES
+          </span>
+          <p className="gl-no-wardrobe-body">
+            You haven't added wardrobe items yet — this look is built entirely
+            from missing pieces. Add items to your wardrobe to get personalised
+            outfits that use what you already own.
+          </p>
+          <Link to="/wardrobe" className="gl-no-wardrobe-link">
+            Go to wardrobe →
+          </Link>
         </div>
       )}
 

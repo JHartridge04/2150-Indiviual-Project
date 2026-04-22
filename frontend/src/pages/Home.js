@@ -12,6 +12,7 @@ import { useAuth } from "../context/AuthContext";
 import { uploadPhoto, analyzeStyle } from "../services/api";
 import StyleProfile from "../components/StyleProfile";
 import AppHeader from "../components/AppHeader";
+import ErrorBanner from "../components/ErrorBanner";
 import "./Home.css";
 
 export default function Home() {
@@ -61,23 +62,19 @@ export default function Home() {
   // -------------------------------------------------------------------------
   // Upload → Analyse pipeline
   // -------------------------------------------------------------------------
-  async function handleUpload(e) {
-    e.preventDefault();
+  async function runUploadAndAnalyse() {
     if (!file) {
       setError("Please choose a photo first.");
       return;
     }
-
     setError("");
-
+    setProfile(null);
     try {
-      // Step 1 — upload to Supabase via Flask
       setUploading(true);
       const { url } = await uploadPhoto(file, token);
       setUploadedUrl(url);
       setUploading(false);
 
-      // Step 2 — send to Claude for style analysis
       setAnalysing(true);
       const result = await analyzeStyle(url, token);
       setProfile(result);
@@ -88,6 +85,11 @@ export default function Home() {
       setUploading(false);
       setAnalysing(false);
     }
+  }
+
+  async function handleUpload(e) {
+    e.preventDefault();
+    await runUploadAndAnalyse();
   }
 
   // -------------------------------------------------------------------------
@@ -116,7 +118,13 @@ export default function Home() {
             Upload a photo of your outfit and get an AI-powered style analysis.
           </p>
 
-          {error && <div className="error-banner">{error}</div>}
+          {error && (
+            <ErrorBanner
+              message={error}
+              context="SYS/ANALYSIS"
+              onRetry={file ? runUploadAndAnalyse : undefined}
+            />
+          )}
 
           <form onSubmit={handleUpload} className="upload-form">
             {/* Drop / file input zone */}

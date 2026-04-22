@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import supabase from "../services/supabaseClient";
 import AppHeader from "../components/AppHeader";
+import ErrorBanner from "../components/ErrorBanner";
 import "./Auth.css";
 
 export default function Login() {
@@ -54,7 +55,7 @@ export default function Login() {
         <AppHeader compact />
         <h2>Sign In</h2>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error && <ErrorBanner message={error} context="SYS/AUTH" />}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label htmlFor="email">Email</label>

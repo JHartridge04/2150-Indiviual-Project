@@ -1,0 +1,81 @@
+/* ErrorBanner.css — utilitarian inline error/warning card */
+
+.ns-eb {
+  border: 1.5px solid var(--ns-border);
+  border-left: 3px solid var(--ns-accent);
+  background: var(--ns-bg-alt);
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ns-eb--warning {
+  border-left-color: var(--ns-ink-muted);
+}
+
+.ns-eb-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.ns-eb-sys {
+  font-family: var(--ns-font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.ns-eb-sys-context { color: var(--ns-accent); font-weight: 500; }
+.ns-eb-sys-sep     { color: #c0c0c0; }
+.ns-eb-sys-type    { color: var(--ns-ink-muted); }
+
+.ns-eb--warning .ns-eb-sys-context { color: var(--ns-ink-muted); }
+
+.ns-eb-message {
+  font-family: var(--ns-font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ns-ink);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ns-eb-explanation {
+  font-family: var(--ns-font-body);
+  font-size: 0.78rem;
+  color: var(--ns-ink-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ns-eb-retry {
+  flex-shrink: 0;
+  align-self: center;
+  background: transparent;
+  border: 1.5px solid var(--ns-border);
+  color: var(--ns-ink);
+  font-family: var(--ns-font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s;
+}
+
+.ns-eb-retry:hover {
+  background: var(--ns-ink);
+  color: var(--ns-bg-alt);
+}

@@ -5,6 +5,7 @@ import { fillGap } from "../services/api";
 import RecommendationCard from "./RecommendationCard";
 import Skeleton from "./Skeleton";
 import ProgressBar from "./ProgressBar";
+import ErrorBanner from "./ErrorBanner";
 import "./StyleAuditModal.css";
 
 const AUDIT_MSGS = [
@@ -14,6 +15,55 @@ const AUDIT_MSGS = [
   "RUNNING GAP ANALYSIS...",
   "GENERATING AUDIT REPORT...",
 ];
+
+function AuditGate({ itemCount, onClose }) {
+  const NEEDED = 5;
+  const filled = Math.min(itemCount, NEEDED);
+  const blocks = "▓".repeat(filled) + "░".repeat(NEEDED - filled);
+
+  return (
+    <div className="sam-gate">
+      <div className="sam-gate-sys">
+        <span className="sam-gate-sys-accent">SYS/AUDIT</span>
+        <span className="sam-gate-sys-sep">›</span>
+        <span>MIN_ITEMS=5</span>
+      </div>
+      <h3 className="sam-gate-headline">
+        Not Enough<br />Signal
+      </h3>
+      <p className="sam-gate-body">
+        Add at least <strong>5 wardrobe items</strong> for the style audit to
+        identify meaningful gaps in your wardrobe.
+      </p>
+      <div className="sam-gate-counter">
+        <div className="sam-gate-counter-label">ITEMS REQUIRED</div>
+        <div className="sam-gate-blocks">[{blocks}]</div>
+        <div className="sam-gate-counts">
+          <span className="sam-gate-count-item">
+            CURRENT <span className="sam-gate-count-val sam-gate-count-val--accent">{filled}</span>
+          </span>
+          <span className="sam-gate-count-item">
+            NEEDED <span className="sam-gate-count-val">{NEEDED}</span>
+          </span>
+        </div>
+        <div className="sam-gate-track">
+          <div className="sam-gate-fill" style={{ width: `${(filled / NEEDED) * 100}%` }} />
+        </div>
+        <div className="sam-gate-remaining">
+          {NEEDED - filled} MORE ITEM{NEEDED - filled !== 1 ? "S" : ""} TO UNLOCK AUDIT
+        </div>
+      </div>
+      <Link to="/wardrobe" className="sam-gate-cta" onClick={onClose}>
+        <span className="sam-gate-cta-dot" />
+        Add wardrobe items →
+      </Link>
+      <div className="sam-gate-footer">
+        <span className="sam-gate-footer-ref">REF:AUDIT-GATE-001</span>
+        <span className="sam-gate-footer-ver">SYS/01 • v1.0</span>
+      </div>
+    </div>
+  );
+}
 
 function AuditSkeleton() {
   return (
@@ -130,7 +180,7 @@ function GapCard({ gap }) {
       </div>
       <p className="sam-gap-desc">{gap.description}</p>
 
-      {error && <div className="error-banner sam-gap-error">{error}</div>}
+      {error && <ErrorBanner message={error} context="SYS/GAP" onRetry={handleFindPieces} />}
 
       {products === null ? (
         <button
@@ -153,7 +203,7 @@ function GapCard({ gap }) {
   );
 }
 
-export default function StyleAuditModal({ audit, runningAudit, auditError, onClose }) {
+export default function StyleAuditModal({ audit, runningAudit, auditError, itemCount = 0, onRetry, onClose }) {
   const timestamp = useState(() => formatTimestamp())[0];
 
   return (
@@ -164,16 +214,13 @@ export default function StyleAuditModal({ audit, runningAudit, auditError, onClo
         {runningAudit ? (
           <AuditSkeleton />
         ) : auditError ? (
-          <div className="sam-error-state">
-            {auditError.includes("5 items") ? (
-              <p className="sam-too-few">
-                {auditError}{" "}
-                <Link to="/wardrobe" onClick={onClose}>Add items →</Link>
-              </p>
-            ) : (
-              <div className="error-banner">{auditError}</div>
-            )}
-          </div>
+          auditError.toLowerCase().includes("at least 5 items") ? (
+            <AuditGate itemCount={itemCount} onClose={onClose} />
+          ) : (
+            <div className="sam-error-state">
+              <ErrorBanner message={auditError} context="SYS/AUDIT" onRetry={onRetry} />
+            </div>
+          )
         ) : audit ? (
           <>
             <div className="sam-stamp">

@@ -223,6 +223,49 @@
   border-left: var(--ns-border-heavy) solid var(--ns-accent);
 }
 
+/* No-wardrobe inline note */
+.gl-no-wardrobe-note {
+  background: var(--ns-bg);
+  border: var(--ns-border-width) solid var(--ns-border-subtle);
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 0.25rem;
+}
+
+.gl-no-wardrobe-sys {
+  font-family: var(--ns-font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ns-ink-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gl-no-wardrobe-sys-accent { color: var(--ns-accent); font-weight: 500; }
+.gl-no-wardrobe-sys-sep    { color: #c0c0c0; }
+
+.gl-no-wardrobe-body {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ns-ink-muted);
+  margin: 0;
+}
+
+.gl-no-wardrobe-link {
+  font-family: var(--ns-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: var(--ns-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.gl-no-wardrobe-link:hover { color: var(--ns-accent); }
+
 /* Sections */
 .gl-result-section {
   padding: 1.25rem 0;

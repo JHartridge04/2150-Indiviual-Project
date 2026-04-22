@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { uploadPhoto, analyzeStyle, compareOutfits } from "../services/api";
 import AppHeader from "../components/AppHeader";
 import HistoryPicker from "../components/HistoryPicker";
+import ErrorBanner from "../components/ErrorBanner";
 import "./Compare.css";
 
 const OCCASIONS = ["", "Work", "Date night", "Casual", "Formal", "Weekend"];
@@ -154,7 +155,13 @@ export default function Compare() {
       <main className="compare-main">
         <h2 className="compare-heading">Outfit Compare</h2>
 
-        {error && <div className="error-banner">{error}</div>}
+        {error && (
+          <ErrorBanner
+            message={error}
+            context="SYS/COMPARE"
+            onRetry={slotA.analysis && slotB.analysis ? handleCompare : undefined}
+          />
+        )}
 
         {result ? (
           <CompareResult

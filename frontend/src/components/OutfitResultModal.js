@@ -3,6 +3,7 @@ import "./OutfitResultModal.css";
 import RecommendationCard from "./RecommendationCard";
 import Skeleton from "./Skeleton";
 import ProgressBar from "./ProgressBar";
+import ErrorBanner from "./ErrorBanner";
 
 const OUTFIT_MSGS = [
   "READING ANCHOR ITEM...",
@@ -71,7 +72,7 @@ function OutfitBuilderSkeleton({ anchorItem }) {
   );
 }
 
-export default function OutfitResultModal({ anchorItem, wardrobeItems, result, loading, onClose }) {
+export default function OutfitResultModal({ anchorItem, wardrobeItems, result, loading, error, onRetry, onClose }) {
   const wardrobeById = Object.fromEntries((wardrobeItems || []).map((i) => [i.id, i]));
 
   return (
@@ -83,6 +84,10 @@ export default function OutfitResultModal({ anchorItem, wardrobeItems, result, l
 
         {loading ? (
           <OutfitBuilderSkeleton anchorItem={anchorItem} />
+        ) : error ? (
+          <div className="orm-error-state">
+            <ErrorBanner message={error} context="SYS/BUILD" onRetry={onRetry} />
+          </div>
         ) : (
           <>
         <h3 className="orm-title">Your Outfit</h3>

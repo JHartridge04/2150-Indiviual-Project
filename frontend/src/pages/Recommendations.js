@@ -12,6 +12,7 @@ import { getRecommendations, refreshRecommendations } from "../services/api";
 import RecommendationCard from "../components/RecommendationCard";
 import Skeleton from "../components/Skeleton";
 import ProgressBar from "../components/ProgressBar";
+import ErrorBanner from "../components/ErrorBanner";
 import "./Recommendations.css";
 
 const REC_MSGS = [
@@ -123,17 +124,12 @@ export default function Recommendations() {
           </button>
         </div>
 
-        {error && <div className="error-banner">{error}</div>}
+        {error && <ErrorBanner message={error} context="SYS/RECS" onRetry={handleRefresh} />}
 
         {loading ? (
           <RecommendationsSkeleton />
         ) : items.length === 0 ? (
-          <p className="no-items">
-            No recommendations found.{" "}
-            <button className="link-btn" onClick={handleRefresh} disabled={refreshing}>
-              Try again
-            </button>
-          </p>
+          <p className="no-items">No recommendations found.</p>
         ) : (
           <div className="rec-grid">
             {items.map((item, idx) => (

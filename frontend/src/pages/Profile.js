@@ -10,6 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import { getProfile, updateProfile, changePassword } from "../services/api";
 import PasswordStrengthMeter, { passwordMeetsMinimum } from "../components/PasswordStrengthMeter";
 import AppHeader from "../components/AppHeader";
+import ErrorBanner from "../components/ErrorBanner";
 import "./Profile.css";
 
 // ---------------------------------------------------------------------------
@@ -129,12 +130,10 @@ export default function Profile() {
   // -------------------------------------------------------------------------
   // Save
   // -------------------------------------------------------------------------
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function doSave() {
     setSaving(true);
     setMessage({ text: "", type: "" });
 
-    // Build payload: convert empty strings to null, keep arrays as-is
     const payload = {};
     for (const [key, val] of Object.entries(form)) {
       if (Array.isArray(val)) {
@@ -159,18 +158,15 @@ export default function Profile() {
     }
   }
 
+  async function handleSubmit(e) {
+    e.preventDefault();
+    doSave();
+  }
+
   // -------------------------------------------------------------------------
   // Change password
   // -------------------------------------------------------------------------
-  async function handleChangePassword(e) {
-    e.preventDefault();
-    setPwMessage({ text: "", type: "" });
-
-    if (pwForm.newPw !== pwForm.confirm) {
-      setPwMessage({ text: "New passwords do not match.", type: "error" });
-      return;
-    }
-
+  async function doChangePassword() {
     setPwSaving(true);
     try {
       await changePassword(pwForm.current, pwForm.newPw, token);
@@ -181,6 +177,18 @@ export default function Profile() {
     } finally {
       setPwSaving(false);
     }
+  }
+
+  async function handleChangePassword(e) {
+    e.preventDefault();
+    setPwMessage({ text: "", type: "" });
+
+    if (pwForm.newPw !== pwForm.confirm) {
+      setPwMessage({ text: "New passwords do not match.", type: "error" });
+      return;
+    }
+
+    doChangePassword();
   }
 
   const pwCanSubmit =
@@ -320,10 +328,13 @@ export default function Profile() {
               </div>
             </section>
 
-            {message.text && (
-              <p className={`profile-message profile-message--${message.type}`}>
+            {message.text && message.type === "success" && (
+              <p className="profile-message profile-message--success">
                 {message.text}
               </p>
+            )}
+            {message.text && message.type === "error" && (
+              <ErrorBanner message={message.text} context="SYS/PROFILE" onRetry={doSave} />
             )}
 
             <button type="submit" className="btn-primary profile-save" disabled={saving}>
@@ -381,10 +392,13 @@ export default function Profile() {
                 />
               </div>
 
-              {pwMessage.text && (
-                <p className={`profile-message profile-message--${pwMessage.type}`}>
+              {pwMessage.text && pwMessage.type === "success" && (
+                <p className="profile-message profile-message--success">
                   {pwMessage.text}
                 </p>
+              )}
+              {pwMessage.text && pwMessage.type === "error" && (
+                <ErrorBanner message={pwMessage.text} context="SYS/PROFILE" onRetry={doChangePassword} />
               )}
 
               <button type="submit" className="btn-primary profile-save" disabled={pwSaving || !pwCanSubmit}>

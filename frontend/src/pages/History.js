@@ -5,13 +5,58 @@
  * analysis summary and all associated tags.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import AppHeader from "../components/AppHeader";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getHistory, deleteHistoryItem } from "../services/api";
 import OutfitCard from "../components/OutfitCard";
+import ErrorBanner from "../components/ErrorBanner";
 import "./History.css";
+
+function EmptyHistoryState() {
+  return (
+    <div className="history-empty">
+      <div className="history-empty-sys">
+        <span className="history-empty-sys-accent">SYS/HIST</span>
+        <span className="history-empty-sys-sep">›</span>
+        <span>EMPTY_STATE</span>
+      </div>
+      <h3 className="history-empty-headline">
+        No Analyses<br />Yet
+      </h3>
+      <p className="history-empty-body">
+        Every outfit you upload gets analysed and stored here. Compare looks
+        over time, revisit your style evolution, and pull up past results to
+        generate new recommendations.
+      </p>
+      <Link to="/" className="history-empty-cta">
+        <span className="history-empty-cta-dot" />
+        Upload your first outfit →
+      </Link>
+      <div className="history-empty-rule">
+        <div className="history-empty-rule-line" />
+        <span className="history-empty-rule-label">your analyses will appear below</span>
+        <div className="history-empty-rule-line" />
+      </div>
+      <div className="history-ghost-grid">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="history-ghost-card" style={{ opacity: 0.5 + i * 0.04 }}>
+            <div className="history-ghost-img">
+              <div className="history-ghost-crossh history-ghost-crossh-h" />
+              <div className="history-ghost-crossh history-ghost-crossh-v" />
+              <span className="history-ghost-label">outfit photo</span>
+            </div>
+            <div className="history-ghost-meta">
+              <div className="history-ghost-line" style={{ width: "55%" }} />
+              <div className="history-ghost-line" style={{ width: "80%", opacity: 0.6 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function History() {
   const { user, token } = useAuth();
@@ -24,20 +69,21 @@ export default function History() {
   // ---------------------------------------------------------------------------
   // Fetch history on mount
   // ---------------------------------------------------------------------------
-  useEffect(() => {
-    async function fetchHistory() {
-      try {
-        const data = await getHistory(token);
-        setAnalyses(data.analyses || []);
-      } catch (err) {
-        setError(err.message || "Failed to load history.");
-      } finally {
-        setLoading(false);
-      }
+  const fetchHistory = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getHistory(token);
+      setAnalyses(data.analyses || []);
+    } catch (err) {
+      setError(err.message || "Failed to load history.");
+    } finally {
+      setLoading(false);
     }
-
-    if (token) fetchHistory();
   }, [token]);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
   // ---------------------------------------------------------------------------
   // Card selection — clicking the same card again collapses the panel
@@ -101,15 +147,12 @@ export default function History() {
       <main className="history-main">
         <h2 className="history-heading">Style History</h2>
 
-        {error && <div className="error-banner">{error}</div>}
+        {error && <ErrorBanner message={error} context="SYS/HIST" onRetry={fetchHistory} />}
 
         {loading ? (
           <div className="loading-spinner">Loading history…</div>
         ) : analyses.length === 0 ? (
-          <p className="no-items">
-            No analyses yet.{" "}
-            <Link to="/">Upload an outfit</Link> to get started.
-          </p>
+          <EmptyHistoryState />
         ) : (
           <>
             <div className="history-grid">
