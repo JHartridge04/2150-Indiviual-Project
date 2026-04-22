@@ -10,6 +10,14 @@ frontend/.env.production.local
 venv/
 backend/venv/
 
+# --- OS / Editor ---
+.claude/
+desktop.ini
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+
 # --- Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -185,7 +193,7 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+# .idea/ — also covered in the project-specific section above
 
 # Abstra
 # Abstra is an AI-powered process automation framework.
@@ -198,7 +206,7 @@ cython_debug/
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
 #  and can be added to the global gitignore or merged into this file. However, if you prefer, 
 #  you could uncomment the following to ignore the entire vscode folder
-# .vscode/
+# .vscode/ — also covered in the project-specific section above
 
 # Ruff stuff:
 .ruff_cache/

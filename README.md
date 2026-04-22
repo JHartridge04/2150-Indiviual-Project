@@ -1,35 +1,59 @@
-# 👗 AI-Powered Personal Style Assistant
+# No Stylist — AI-powered personal style assistant
 
-A full-stack web app that uses AI (Claude) to analyse your outfit photos and provide personalised style recommendations.
+A full-stack web app that analyses your wardrobe and outfit photos with AI to deliver personalised style recommendations, outfit building, and shoppable product suggestions.
 
-## Tech Stack
-
-| Layer     | Technology                              |
-|-----------|----------------------------------------|
-| Frontend  | React (Create React App)               |
-| Backend   | Python + Flask                         |
-| Auth/DB   | Supabase (Auth + Storage)              |
-| AI        | Anthropic Claude (vision analysis)     |
+**Live demo:** https://no-stylist.vercel.app
+> The backend runs on Render's free tier — expect a ~30 s cold-start on first load.
 
 ---
 
-## Project Structure
+## Screenshots
 
-```
-.
-├── .env.example         # Copy to .env and fill in your keys
-├── frontend/            # React app
-│   ├── src/
-│   │   ├── components/  # Reusable UI components
-│   │   ├── context/     # AuthContext (Supabase session state)
-│   │   ├── pages/       # Route-level page components
-│   │   └── services/    # API & Supabase client helpers
-│   └── package.json
-└── backend/             # Flask API
-    ├── app.py           # Main application & endpoints
-    ├── requirements.txt
-    └── tests/           # Pytest unit tests
-```
+| Upload | Analyse | Shop |
+|--------|---------|------|
+| ![Upload](frontend/public/landing-screenshots/01-upload.png) | ![Analyse](frontend/public/landing-screenshots/02-analyze.png) | ![Shop](frontend/public/landing-screenshots/03-shop.png) |
+
+---
+
+## Features
+
+- AI vision analysis of outfit photos (colors, silhouettes, style tags, written summary)
+- Persistent style history with per-analysis deletion
+- Dynamic AI-powered product recommendations with caching
+- User profiles (gender, age, sizes, preferred styles, brands, occasions, budget) that feed both analysis and recommendations
+- Bulk wardrobe upload with AI auto-tagging (category, colors, style tags, description)
+- Derive a style profile directly from wardrobe contents
+- Outfit builder: pick an anchor item, AI builds around it with wardrobe pieces + shoppable missing gaps
+- Generate a look from occasion/weather/vibe inputs
+- Wardrobe style audit with on-demand gap-filling
+- A/B outfit comparison with optional occasion context
+- Full auth: signup with password strength meter, login, logout, change password, forgot password with email reset
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React (CRA), React Router v6 |
+| Backend | Python 3.11+, Flask, Flask-CORS, Gunicorn |
+| Auth/DB/Storage | Supabase with RLS policies |
+| AI | Anthropic Claude (claude-opus-4-5 vision) |
+| Product search | RapidAPI Real-Time Product Search (Google Shopping) |
+| Frontend hosting | Vercel |
+| Backend hosting | Render |
+| Testing | pytest (50+ backend tests), Jest (frontend) |
+
+---
+
+## Architecture Highlights
+
+- Row-level security on every user-scoped table — queries are impossible without a valid session
+- Per-request Supabase client pattern ensures RLS is applied consistently across all endpoints
+- SSRF protection on image-fetch endpoints (allowlist + private-IP blocking)
+- Recommendation results are cached per analysis to avoid redundant API calls
+- Non-fatal failure handling across AI pipelines — partial results surface rather than erroring the whole request
+- Images are compressed client-side before upload to stay within Claude's 5 MB limit
 
 ---
 
@@ -37,20 +61,22 @@ A full-stack web app that uses AI (Claude) to analyse your outfit photos and pro
 
 - Node.js ≥ 18
 - Python ≥ 3.11
-- A [Supabase](https://supabase.com) project with:
+- [Supabase](https://supabase.com) project with:
   - Auth enabled
-  - A storage bucket named `outfit-photos` (set to public or use RLS)
-- An [Anthropic](https://console.anthropic.com) API key
+  - Two storage buckets: `outfit-photos` and `wardrobe-items` (each with RLS policies)
+  - SQL migrations run (see `backend/migrations/`)
+- [Anthropic](https://console.anthropic.com) API key
+- [RapidAPI](https://rapidapi.com) key with Real-Time Product Search subscribed
 
 ---
 
-## Setup
+## Local Setup
 
-### 1. Clone & configure environment variables
+### 1. Clone the repo
 
 ```bash
-cp .env.example .env
-# Edit .env and fill in SUPABASE_URL, SUPABASE_ANON_KEY, ANTHROPIC_API_KEY
+git clone <repo-url>
+cd 2150-Indiviual-Project
 ```
 
 ### 2. Backend
@@ -60,7 +86,24 @@ cd backend
 python3 -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-flask run                        # Starts on http://localhost:5000
+```
+
+Create `backend/.env`:
+
+```
+SUPABASE_URL=...
+SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+ANTHROPIC_API_KEY=...
+RAPIDAPI_KEY=...
+```
+
+Run the SQL migrations in your Supabase project (SQL Editor → paste each file from `backend/migrations/` in order).
+
+Start the server:
+
+```bash
+flask run                        # http://localhost:5000
 ```
 
 ### 3. Frontend
@@ -68,59 +111,56 @@ flask run                        # Starts on http://localhost:5000
 ```bash
 cd frontend
 npm install
-npm start                        # Starts on http://localhost:3000
 ```
+
+Create `frontend/.env`:
+
+```
+REACT_APP_BACKEND_URL=http://localhost:5000
+REACT_APP_SUPABASE_URL=...
+REACT_APP_SUPABASE_ANON_KEY=...
+```
+
+Start the dev server:
+
+```bash
+npm start                        # http://localhost:3000
+```
+
+> Always start the backend before the frontend. The app will load without it, but every API call will fail until the backend is up.
 
 ---
 
 ## API Endpoints
 
-| Method | Path                   | Description                              | Auth |
-|--------|------------------------|------------------------------------------|------|
-| POST   | `/api/auth/signup`     | Register a new user                      | ✗    |
-| POST   | `/api/auth/login`      | Sign in and get a JWT session            | ✗    |
-| POST   | `/api/auth/logout`     | Sign out                                 | ✓    |
-| POST   | `/api/upload`          | Upload an outfit photo to Supabase       | ✓    |
-| POST   | `/api/analyze`         | AI style analysis via Claude             | ✓    |
-| GET/POST | `/api/recommendations` | Get clothing recommendations           | ✓    |
-| GET    | `/api/health`          | Health check                             | ✗    |
+All authenticated endpoints require `Authorization: Bearer <access_token>`.
 
-Authenticated endpoints require `Authorization: Bearer <access_token>`.
-
----
-
-## Accessing the App
-
-Once both servers are running (see **Setup** above), open your browser:
-
-| What you want to do | URL |
-|---|---|
-| Create a new account | <http://localhost:3000/signup> |
-| Log in to an existing account | <http://localhost:3000/login> |
-| Upload an outfit & get AI feedback | <http://localhost:3000/> *(redirects to login if not signed in)* |
-| View clothing recommendations | <http://localhost:3000/recommendations> *(protected)* |
-| Backend health check | <http://localhost:5000/api/health> |
-
-> **Start-up order:** always start the **backend** (`flask run`) before the **frontend** (`npm start`). The frontend will still start if the backend is not running, but any API call (login, upload, analyse) will fail with a network error until the backend is up.
-
-### First-time use (quick-start)
-
-1. Complete the [Setup](#setup) steps above (clone, configure `.env`, install dependencies).
-2. Start the backend in one terminal:
-   ```bash
-   cd backend
-   source venv/bin/activate   # Windows: venv\Scripts\activate
-   flask run
-   ```
-3. Start the frontend in a second terminal:
-   ```bash
-   cd frontend
-   npm start
-   ```
-4. Your browser will open automatically at **<http://localhost:3000>**.  
-   Because all main pages are protected, you will be redirected to the login page.
-5. Click **"Sign up"** (or navigate to `/signup`) to create an account.
-6. After signing up, you will be redirected to the home page where you can upload an outfit photo and receive AI-powered style recommendations.
+| Method | Path | Description | Auth |
+|--------|------|-------------|------|
+| POST | `/api/auth/signup` | Register a new user | ✗ |
+| POST | `/api/auth/login` | Sign in, receive JWT session | ✗ |
+| POST | `/api/auth/logout` | Sign out | ✓ |
+| POST | `/api/auth/change-password` | Change password | ✓ |
+| POST | `/api/upload` | Upload outfit photo to Supabase storage | ✓ |
+| POST | `/api/analyze` | AI vision analysis of an outfit photo | ✓ |
+| GET | `/api/history` | List all past analyses for the user | ✓ |
+| DELETE | `/api/history/<id>` | Delete a specific analysis | ✓ |
+| GET | `/api/profile` | Get user style profile | ✓ |
+| PUT | `/api/profile` | Update user style profile | ✓ |
+| POST | `/api/profile/apply-derived` | Apply wardrobe-derived style to profile | ✓ |
+| POST | `/api/recommendations/<analysis_id>` | Generate product recommendations for an analysis | ✓ |
+| DELETE | `/api/recommendations/<analysis_id>` | Clear cached recommendations for an analysis | ✓ |
+| POST | `/api/wardrobe/upload` | Bulk upload wardrobe items with AI auto-tagging | ✓ |
+| GET | `/api/wardrobe` | List wardrobe items | ✓ |
+| PATCH | `/api/wardrobe/<id>` | Update a wardrobe item | ✓ |
+| DELETE | `/api/wardrobe/<id>` | Delete a wardrobe item | ✓ |
+| POST | `/api/wardrobe/derive-style` | Derive style profile from wardrobe contents | ✓ |
+| POST | `/api/wardrobe/build-outfit` | Build an outfit around an anchor wardrobe item | ✓ |
+| POST | `/api/wardrobe/audit` | AI wardrobe style audit | ✓ |
+| POST | `/api/wardrobe/audit/fill-gap` | Get product suggestions for a wardrobe gap | ✓ |
+| POST | `/api/looks/generate` | Generate a look from occasion/weather/vibe inputs | ✓ |
+| POST | `/api/compare` | A/B outfit comparison with optional occasion context | ✓ |
+| GET | `/api/health` | Backend health check | ✗ |
 
 ---
 
@@ -140,3 +180,17 @@ pytest tests/ -v
 cd frontend
 npm test
 ```
+
+---
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for instructions on deploying to Vercel (frontend) and Render (backend).
+
+---
+
+## Acknowledgments
+
+This project was built using Anthropic's tools:
+- **[Claude Code](https://claude.ai/code)** — AI coding assistant used throughout implementation
+- **Claude Design** — UI/UX design with direct handoff to Claude Code for implementation
