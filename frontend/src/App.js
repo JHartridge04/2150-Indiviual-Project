@@ -15,10 +15,12 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Logout from "./pages/Logout";
+import Landing from "./pages/Landing";
 import Recommendations from "./pages/Recommendations";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
@@ -34,6 +36,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           {/* Public routes */}
+          <Route path="/landing" element={<PublicOnlyRoute><Landing /></PublicOnlyRoute>} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/logout" element={<Logout />} />
