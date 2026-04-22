@@ -241,3 +241,121 @@
   font-size: 0.72rem;
   padding: 0.3rem 0.5rem;
 }
+
+/* ---- Audit skeleton ---- */
+
+.sam-skel-wrap {
+  margin: -2rem -1.75rem -2.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sam-skel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 1.75rem;
+  border-bottom: var(--ns-border-width) solid var(--ns-border);
+}
+
+.sam-skel-title {
+  font-family: var(--ns-font-display);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ns-ink);
+}
+
+.sam-skel-version {
+  font-family: var(--ns-font-mono);
+  font-size: 0.6rem;
+  color: var(--ns-ink-muted);
+  letter-spacing: 0.06em;
+  padding-right: 1.5rem;
+}
+
+.sam-skel-section {
+  padding: 12px 1.75rem;
+  border-bottom: var(--ns-border-width) solid var(--ns-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sam-skel-label {
+  font-family: var(--ns-font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ns-ink-muted);
+  text-transform: uppercase;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--ns-border-subtle);
+}
+
+.sam-skel-score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sam-skel-score-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sam-skel-finding-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.sam-skel-finding-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sam-skel-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.sam-skel-coverage-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sam-skel-coverage-label {
+  font-family: var(--ns-font-mono);
+  font-size: 0.6rem;
+  color: var(--ns-ink-muted);
+  letter-spacing: 0.04em;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.sam-skel-coverage-track {
+  flex: 1;
+  height: 5px;
+  background: #e4e4e2;
+  position: relative;
+}
+
+.sam-skel-coverage-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #c8c8c6;
+}
+
+.sam-skel-progress {
+  margin-top: auto;
+}

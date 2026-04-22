@@ -4,7 +4,72 @@ import { useAuth } from "../context/AuthContext";
 import { generateLook } from "../services/api";
 import AppHeader from "../components/AppHeader";
 import RecommendationCard from "../components/RecommendationCard";
+import Skeleton from "../components/Skeleton";
+import ProgressBar from "../components/ProgressBar";
 import "./GenerateLook.css";
+
+const LOOK_MSGS = [
+  "SCANNING YOUR WARDROBE...",
+  "MAPPING OCCASION CONTEXT...",
+  "BUILDING OUTFIT FRAMEWORK...",
+  "SOURCING MISSING PIECES...",
+  "COMPILING YOUR LOOK...",
+];
+
+function GenerateLookSkeleton() {
+  return (
+    <div className="gl-skel-wrap">
+      <div className="gl-skel-header">
+        <div className="gl-skel-stamp-row">
+          <Skeleton width="38%" height={7} />
+          <Skeleton width="22%" height={7} />
+        </div>
+        <Skeleton width="62%" height={13} style={{ marginBottom: 8 }} />
+        <Skeleton width="100%" height={7} style={{ marginBottom: 4 }} />
+        <Skeleton width="76%" height={7} />
+      </div>
+
+      <ProgressBar messages={LOOK_MSGS} intervalMs={2600} prefix="SYS/LOOK >" />
+
+      <div className="gl-skel-section">
+        <div className="gl-skel-section-label">YOUR WARDROBE</div>
+        <div className="gl-skel-pieces-grid">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="gl-skel-piece-card">
+              <Skeleton height={78} />
+              <div className="gl-skel-piece-info">
+                <Skeleton width="52%" height={8} style={{ background: "var(--ns-accent)", opacity: 0.25 }} />
+                <Skeleton width="90%" height={6} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="gl-skel-section">
+        <div className="gl-skel-section-label">WHAT'S MISSING</div>
+        {[0, 1].map((i) => (
+          <div key={i} className="gl-skel-missing-item">
+            <div className="gl-skel-missing-header">
+              <Skeleton width={54} height={17} style={{ background: "var(--ns-accent)", opacity: 0.22 }} />
+              <Skeleton width="55%" height={8} />
+            </div>
+            <div className="gl-skel-product-row">
+              {[0, 1].map((j) => (
+                <div key={j} className="gl-skel-product-card">
+                  <Skeleton height={44} />
+                  <div className="gl-skel-product-label">
+                    <Skeleton width={j === 0 ? "80%" : "70%"} height={6} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const OCCASIONS = ["Work", "Date night", "Casual weekend", "Formal", "Night out", "Travel", "Other"];
 const WEATHER_OPTIONS = ["Cold", "Warm", "Hot", "Rainy", "Mild"];
@@ -90,6 +155,8 @@ export default function GenerateLook() {
             generatedAt={generatedAt}
             onReset={handleReset}
           />
+        ) : loading ? (
+          <GenerateLookSkeleton />
         ) : (
           <LookForm
             occasion={occasion}

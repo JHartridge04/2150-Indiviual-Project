@@ -171,15 +171,17 @@ export default function Wardrobe() {
   // Outfit builder (anchor-based)
   // ---------------------------------------------------------------------------
   async function handleBuildOutfitAround(item) {
-    setEditItem(null); // close edit modal first
+    setEditItem(null);
+    setOutfitAnchorItem(item);  // set before fetch so skeleton shows immediately
+    setOutfitResult(null);
     setBuildingOutfit(true);
     setError("");
     try {
       const data = await buildOutfit(item.id, "", token);
-      setOutfitAnchorItem(item);
       setOutfitResult(data);
     } catch (err) {
       setError(err.message || "Failed to build outfit.");
+      setOutfitAnchorItem(null);
     } finally {
       setBuildingOutfit(false);
     }
@@ -314,11 +316,6 @@ export default function Wardrobe() {
           </button>
         </div>
 
-        {/* Building outfit indicator */}
-        {buildingOutfit && (
-          <div className="loading-spinner">Building outfit with AI…</div>
-        )}
-
         {/* ---- Item grid ---- */}
         {loading ? (
           <div className="loading-spinner">Loading wardrobe…</div>
@@ -412,8 +409,9 @@ export default function Wardrobe() {
       )}
 
       {/* ---- Outfit result modal ---- */}
-      {outfitResult && outfitAnchorItem && (
+      {(buildingOutfit || outfitResult) && outfitAnchorItem && (
         <OutfitResultModal
+          loading={buildingOutfit}
           anchorItem={outfitAnchorItem}
           wardrobeItems={items}
           result={outfitResult}

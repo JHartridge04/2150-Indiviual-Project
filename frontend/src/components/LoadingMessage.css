@@ -1,0 +1,24 @@
+@keyframes ns-loading-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.ns-loading-msg {
+  font-family: var(--ns-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.ns-loading-msg-prefix {
+  color: var(--ns-accent);
+  opacity: 0.8;
+}
+
+.ns-loading-msg-text {
+  color: var(--ns-ink-muted);
+}
+
+.ns-loading-msg-cursor {
+  color: var(--ns-accent);
+  animation: ns-loading-blink 1.06s step-start infinite;
+}

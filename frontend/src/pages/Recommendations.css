@@ -86,6 +86,31 @@
   cursor: default;
 }
 
+/* ---- Recommendations skeleton ---- */
+
+.rec-skel-wrap {
+  margin: 0 -2rem;
+}
+
+.rec-grid--skel {
+  padding: 1.5rem 2rem;
+}
+
+.rec-card-skel-body {
+  padding: 0.9rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  border-top: var(--ns-border-width) solid var(--ns-border-subtle);
+}
+
+.rec-card-skel-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
 .error-banner {
   background: var(--ns-bg-alt);
   border: var(--ns-border-width) solid var(--ns-danger);

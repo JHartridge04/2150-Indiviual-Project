@@ -253,3 +253,75 @@
   font-size: 0.72rem;
   padding: 0.3rem 0.5rem;
 }
+
+/* ---- Outfit builder skeleton ---- */
+
+.orm-skel-wrap {
+  display: flex;
+  flex-direction: column;
+  margin: -0.25rem 0;
+}
+
+.orm-skel-anchor-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.orm-skel-tags-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.orm-skel-progress {
+  margin: 0 -1.75rem;
+}
+
+.orm-skel-pieces-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.orm-skel-piece-card {
+  border: 1.5px solid var(--ns-border-subtle);
+  background: var(--ns-bg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.orm-skel-piece-info {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.orm-skel-look-strip {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.orm-skel-look-thumb {
+  flex: 1;
+  border: 1.5px solid var(--ns-border-subtle);
+  position: relative;
+  overflow: hidden;
+}
+
+.orm-skel-look-thumb--anchor {
+  border-color: var(--ns-accent);
+}
+
+.orm-skel-accent-dot {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  background: var(--ns-accent);
+}

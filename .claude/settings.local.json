@@ -7,7 +7,9 @@
       "Bash(python -m pytest tests/ -q)",
       "Bash(python -m pytest tests/test_app.py -x -q)",
       "Bash(npm run *)",
-      "Bash(python -m pytest tests/test_app.py -q)"
+      "Bash(python -m pytest tests/test_app.py -q)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(gunzip -c \"C:\\\\Users\\\\james\\\\.claude\\\\projects\\\\c--Users-james-Downloads-2150-Indiviual-Project\\\\f1ec9463-e1fc-40ae-8f18-44b1ae0b202a\\\\tool-results\\\\webfetch-1776803488472-couu9d.bin\")"
     ]
   }
 }

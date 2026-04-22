@@ -3,7 +3,89 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { fillGap } from "../services/api";
 import RecommendationCard from "./RecommendationCard";
+import Skeleton from "./Skeleton";
+import ProgressBar from "./ProgressBar";
 import "./StyleAuditModal.css";
+
+const AUDIT_MSGS = [
+  "LOADING WARDROBE DATA...",
+  "IDENTIFYING STYLE CLUSTERS...",
+  "CHECKING COLOUR COHESION...",
+  "RUNNING GAP ANALYSIS...",
+  "GENERATING AUDIT REPORT...",
+];
+
+function AuditSkeleton() {
+  return (
+    <div className="sam-skel-wrap">
+      <div className="sam-skel-header">
+        <span className="sam-skel-title">STYLE AUDIT</span>
+        <span className="sam-skel-version">SYS/01 • v1.0</span>
+      </div>
+
+      <div className="sam-skel-section">
+        <div className="sam-skel-label">OVERALL SCORE</div>
+        <div className="sam-skel-score-row">
+          <Skeleton width={52} height={52} style={{ flexShrink: 0 }} />
+          <div className="sam-skel-score-lines">
+            <Skeleton width="65%" height={8} />
+            <Skeleton width="88%" height={7} />
+            <Skeleton width="50%" height={7} />
+          </div>
+        </div>
+      </div>
+
+      <div className="sam-skel-section">
+        <div className="sam-skel-label">KEY FINDINGS</div>
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="sam-skel-finding-row">
+            <Skeleton
+              width={14}
+              height={14}
+              style={i === 0
+                ? { background: "var(--ns-accent)", opacity: 0.4, flexShrink: 0 }
+                : { flexShrink: 0 }}
+            />
+            <div className="sam-skel-finding-lines">
+              <Skeleton width="72%" height={8} />
+              <Skeleton width="92%" height={7} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="sam-skel-section">
+        <div className="sam-skel-label">STYLE CLUSTERS DETECTED</div>
+        <div className="sam-skel-chips">
+          {[68, 52, 80, 60, 44, 72].map((w, i) => (
+            <Skeleton
+              key={i}
+              width={w}
+              height={19}
+              style={i < 2 ? { background: "var(--ns-accent)", opacity: 0.2 } : {}}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="sam-skel-section">
+        <div className="sam-skel-label">CATEGORY COVERAGE</div>
+        {[["TOPS", 78], ["BOTTOMS", 55], ["OUTERWEAR", 32], ["FOOTWEAR", 60]].map(([label, val]) => (
+          <div key={label} className="sam-skel-coverage-row">
+            <span className="sam-skel-coverage-label">{label}</span>
+            <div className="sam-skel-coverage-track">
+              <div className="sam-skel-coverage-fill" style={{ width: `${val}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="sam-skel-progress">
+        <ProgressBar messages={AUDIT_MSGS} intervalMs={2500} prefix="SYS/AUDIT >" />
+      </div>
+    </div>
+  );
+}
 
 function formatTimestamp() {
   const now = new Date();
@@ -80,10 +162,7 @@ export default function StyleAuditModal({ audit, runningAudit, auditError, onClo
         <button className="sam-close" onClick={onClose} aria-label="Close">×</button>
 
         {runningAudit ? (
-          <div className="sam-loading">
-            <div className="loading-spinner">Running audit…</div>
-            <p className="sam-loading-hint">Analysing your wardrobe with AI — this takes a few seconds.</p>
-          </div>
+          <AuditSkeleton />
         ) : auditError ? (
           <div className="sam-error-state">
             {auditError.includes("5 items") ? (

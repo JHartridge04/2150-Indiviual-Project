@@ -10,7 +10,48 @@ import AppHeader from "../components/AppHeader";
 import { useAuth } from "../context/AuthContext";
 import { getRecommendations, refreshRecommendations } from "../services/api";
 import RecommendationCard from "../components/RecommendationCard";
+import Skeleton from "../components/Skeleton";
+import ProgressBar from "../components/ProgressBar";
 import "./Recommendations.css";
+
+const REC_MSGS = [
+  "READING STYLE PROFILE...",
+  "SCANNING PRODUCT CATALOGUE...",
+  "MATCHING TO YOUR AESTHETIC...",
+  "RANKING BY RELEVANCE...",
+  "FINALISING OUTPUT...",
+];
+
+function RecCardSkeleton() {
+  return (
+    <div className="rec-card">
+      <Skeleton height={200} />
+      <div className="rec-card-skel-body">
+        <Skeleton width="55%" height={7} />
+        <Skeleton width="88%" height={9} />
+        <Skeleton width="68%" height={7} />
+        <div className="rec-card-skel-footer">
+          <Skeleton width="32%" height={11} />
+          <Skeleton width="30%" height={22} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RecommendationsSkeleton() {
+  return (
+    <div className="rec-skel-wrap">
+      <ProgressBar messages={REC_MSGS} intervalMs={2300} prefix="SYS/RECS >" />
+      <div className="rec-grid rec-grid--skel">
+        <RecCardSkeleton />
+        <RecCardSkeleton />
+        <RecCardSkeleton />
+        <RecCardSkeleton />
+      </div>
+    </div>
+  );
+}
 
 export default function Recommendations() {
   const { token, user } = useAuth();
@@ -85,10 +126,7 @@ export default function Recommendations() {
         {error && <div className="error-banner">{error}</div>}
 
         {loading ? (
-          <div className="loading-spinner">
-            <p>Loading recommendations…</p>
-            <p className="loading-hint">This may take a few seconds while AI selects products for you.</p>
-          </div>
+          <RecommendationsSkeleton />
         ) : items.length === 0 ? (
           <p className="no-items">
             No recommendations found.{" "}

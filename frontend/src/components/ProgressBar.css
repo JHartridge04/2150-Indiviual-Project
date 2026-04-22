@@ -1,0 +1,58 @@
+@keyframes ns-progress-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.ns-progress-bar {
+  padding: 9px 12px 10px;
+  background: #0a0a0a;
+  border-top: 1.5px solid #1e1e1e;
+  border-bottom: 1.5px solid #1e1e1e;
+  font-family: var(--ns-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.ns-progress-msg-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.ns-progress-prefix {
+  color: var(--ns-accent);
+  opacity: 0.8;
+}
+
+.ns-progress-msg {
+  color: #e8e8e6;
+}
+
+.ns-progress-cursor {
+  color: var(--ns-accent);
+  animation: ns-progress-blink 1.06s step-start infinite;
+}
+
+.ns-progress-track {
+  position: relative;
+  height: 2px;
+  background: #2a2a2a;
+}
+
+.ns-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--ns-accent);
+  transition: width 0.08s linear;
+}
+
+.ns-progress-footer {
+  margin-top: 4px;
+  display: flex;
+  justify-content: space-between;
+  color: #444444;
+}

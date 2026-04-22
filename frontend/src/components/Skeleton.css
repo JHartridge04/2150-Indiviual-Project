@@ -1,0 +1,26 @@
+@keyframes ns-scan {
+  0%   { transform: translateX(-150%); }
+  100% { transform: translateX(150%); }
+}
+
+.ns-skel {
+  background: #e4e4e2;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ns-skel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 40%,
+    rgba(255, 255, 255, 0.75) 50%,
+    rgba(255, 255, 255, 0.55) 60%,
+    transparent 100%
+  );
+  animation: ns-scan 1.8s ease-in-out infinite;
+}

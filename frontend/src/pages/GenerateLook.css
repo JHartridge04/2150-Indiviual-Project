@@ -377,3 +377,92 @@
   margin-top: 2rem;
   align-self: flex-start;
 }
+
+/* ---- Generate Look skeleton ---- */
+
+.gl-skel-wrap {
+  margin: 0 -2rem -5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.gl-skel-header {
+  padding: 14px 2rem 12px;
+  background: var(--ns-bg-alt);
+  border-bottom: var(--ns-border-width) solid var(--ns-border-subtle);
+}
+
+.gl-skel-stamp-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 9px;
+}
+
+.gl-skel-section {
+  padding: 12px 2rem 10px;
+  border-bottom: var(--ns-border-width) solid var(--ns-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gl-skel-section-label {
+  font-family: var(--ns-font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--ns-ink-muted);
+  text-transform: uppercase;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--ns-border-subtle);
+}
+
+.gl-skel-pieces-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.gl-skel-piece-card {
+  border: 1.5px solid var(--ns-border-subtle);
+  background: var(--ns-bg-alt);
+  overflow: hidden;
+}
+
+.gl-skel-piece-info {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gl-skel-missing-item {
+  border: 1.5px solid var(--ns-border-subtle);
+  background: var(--ns-bg-alt);
+  padding: 9px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gl-skel-missing-header {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.gl-skel-product-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.gl-skel-product-card {
+  border: 1px solid var(--ns-border-subtle);
+  background: var(--ns-bg);
+  overflow: hidden;
+}
+
+.gl-skel-product-label {
+  padding: 4px 6px;
+}
