@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" fill="#0a0a0a"/>
+  <text
+    x="16"
+    y="22"
+    text-anchor="middle"
+    font-family="Archivo, 'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-weight="800"
+    font-size="14"
+    fill="#f4f4f2"
+    letter-spacing="0.5"
+  >NS</text>
+</svg>
