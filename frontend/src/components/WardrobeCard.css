@@ -6,10 +6,10 @@
   border-radius: var(--ns-radius);
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.1s, border-top-color 0.1s;
   display: flex;
   flex-direction: column;
-  border-top: 3px solid transparent;
+  border-top: 3px solid var(--ns-border-subtle);
+  transition: transform var(--ns-transition-medium), border-top-color var(--ns-transition-medium);
 }
 
 .wardrobe-card:hover {
@@ -78,6 +78,7 @@
   border-radius: var(--ns-radius);
   padding: 0.15rem 0.4rem;
   border: 1px solid;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast), filter var(--ns-transition-fast);
 }
 
 .wardrobe-badge--category {
@@ -86,16 +87,31 @@
   border-color: var(--ns-ink);
 }
 
+.wardrobe-badge--category:hover {
+  filter: brightness(1.08);
+}
+
 .wardrobe-badge--owned {
   background: transparent;
   color: var(--ns-success);
   border-color: var(--ns-success);
 }
 
+.wardrobe-badge--owned:hover {
+  background: var(--ns-success);
+  color: var(--ns-bg-alt);
+}
+
 .wardrobe-badge--wishlist {
   background: transparent;
   color: var(--ns-ink-muted);
   border-color: var(--ns-border-subtle);
+}
+
+.wardrobe-badge--wishlist:hover {
+  background: var(--ns-ink);
+  border-color: var(--ns-ink);
+  color: var(--ns-bg-alt);
 }
 
 .wardrobe-card-colors {
@@ -114,6 +130,13 @@
   border: 1px solid var(--ns-border-subtle);
   border-radius: var(--ns-radius);
   padding: 0.1rem 0.35rem;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
+}
+
+.wardrobe-color-chip:hover {
+  background: var(--ns-ink);
+  border-color: var(--ns-ink);
+  color: var(--ns-bg-alt);
 }
 
 .wardrobe-card-desc {
@@ -145,7 +168,7 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.1s, background 0.1s;
+  transition: opacity var(--ns-transition-fast), background-color var(--ns-transition-fast);
   z-index: 2;
 }
 

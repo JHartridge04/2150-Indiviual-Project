@@ -28,7 +28,9 @@ h1, h2, h3, h4 {
 a {
   color: var(--ns-ink);
   text-decoration: underline;
+  transition: color var(--ns-transition-fast);
 }
+
 a:hover {
   color: var(--ns-accent);
 }
@@ -49,7 +51,7 @@ a:hover {
   text-transform: uppercase;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
   width: 100%;
   text-align: center;
 }
@@ -83,7 +85,7 @@ a:hover {
   text-transform: uppercase;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.1s, color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
 }
 
 .btn-secondary:hover {
@@ -105,7 +107,7 @@ a:hover {
   text-transform: uppercase;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.1s, color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
 }
 
 .btn-outline:hover {
@@ -134,6 +136,7 @@ a:hover {
 .no-items a {
   color: var(--ns-ink);
   text-decoration: underline;
+  transition: color var(--ns-transition-fast);
 }
 
 .no-items a:hover {

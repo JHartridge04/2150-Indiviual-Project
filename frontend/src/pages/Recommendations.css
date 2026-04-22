@@ -44,6 +44,13 @@
   border: 1px solid var(--ns-border);
   border-radius: var(--ns-radius);
   padding: 0.2rem 0.5rem;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
+}
+
+.style-tag:hover {
+  background: var(--ns-ink);
+  border-color: var(--ns-ink);
+  color: var(--ns-bg-alt);
 }
 
 .rec-grid {
@@ -75,6 +82,7 @@
   padding: 0;
   text-decoration: underline;
   font-family: inherit;
+  transition: color var(--ns-transition-fast);
 }
 
 .link-btn:hover {

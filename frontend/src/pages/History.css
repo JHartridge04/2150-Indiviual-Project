@@ -42,6 +42,27 @@
   margin-top: -1px;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .history-detail {
+    position: relative;
+    overflow: hidden;
+    border-top-color: transparent;
+  }
+
+  .history-detail::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: var(--ns-border-heavy);
+    background: var(--ns-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: ns-accent-bar-reveal var(--ns-transition-slow) forwards;
+  }
+}
+
 .history-detail-title {
   font-family: var(--ns-font-display);
   font-size: 0.78rem;
@@ -95,6 +116,13 @@
   border: 1px solid var(--ns-border);
   border-radius: var(--ns-radius);
   padding: 0.2rem 0.5rem;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
+}
+
+.style-tag:hover {
+  background: var(--ns-ink);
+  border-color: var(--ns-ink);
+  color: var(--ns-bg-alt);
 }
 
 /* ---- States ---- */
@@ -167,7 +195,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: background 0.1s, border-color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
 }
 
 .history-empty-cta:hover {

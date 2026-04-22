@@ -56,7 +56,7 @@
   font-family: var(--ns-font-mono);
   font-size: 0.8rem;
   letter-spacing: 0.03em;
-  transition: border-color 0.1s;
+  transition: border-color var(--ns-transition-medium), color var(--ns-transition-fast);
 }
 
 .wardrobe-file-zone:hover {
@@ -139,7 +139,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.1s, color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast), filter var(--ns-transition-fast);
 }
 
 .wardrobe-filter-btn:last-child {
@@ -154,6 +154,10 @@
 .wardrobe-filter-btn--active {
   background: var(--ns-ink);
   color: var(--ns-bg-alt);
+}
+
+.wardrobe-filter-btn--active:hover {
+  filter: brightness(1.08);
 }
 
 .wardrobe-toolbar-actions {
@@ -183,6 +187,13 @@
   padding: 1rem;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .wardrobe-modal-overlay {
+    opacity: 0;
+    animation: ns-modal-backdrop-in var(--ns-transition-medium) forwards;
+  }
+}
+
 .wardrobe-modal {
   background: var(--ns-bg-alt);
   border: var(--ns-border-heavy) solid var(--ns-border);
@@ -193,6 +204,14 @@
   overflow-y: auto;
   padding: 1.75rem;
   position: relative;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wardrobe-modal {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: ns-modal-panel-in var(--ns-transition-medium) forwards;
+  }
 }
 
 /* ---- Derive-style insufficient-items gate ---- */
@@ -293,7 +312,14 @@
   top: 0;
   height: 100%;
   background: var(--ns-accent);
-  transition: width 0.3s;
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wdg-fill {
+    transform: scaleX(0);
+    animation: ns-accent-bar-reveal var(--ns-transition-slow) forwards;
+  }
 }
 
 .wdg-remaining {
@@ -318,7 +344,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.1s, border-color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
 }
 
 .wdg-cta:hover {
@@ -461,7 +487,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.1s, border-color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
 }
 
 .wardrobe-empty-cta:hover {

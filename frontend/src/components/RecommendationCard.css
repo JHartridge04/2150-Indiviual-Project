@@ -3,12 +3,13 @@
 .rec-card {
   background: var(--ns-bg-alt);
   border: var(--ns-border-width) solid var(--ns-border);
-  border-top: 3px solid transparent;
+  border-top: 3px solid var(--ns-border-subtle);
   border-radius: var(--ns-radius);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.1s, border-top-color 0.1s;
+  cursor: pointer;
+  transition: transform var(--ns-transition-medium), border-top-color var(--ns-transition-medium);
 }
 
 .rec-card:hover {

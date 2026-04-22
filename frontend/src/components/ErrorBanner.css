@@ -72,7 +72,7 @@
   padding: 0.35rem 0.75rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.1s, color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
 }
 
 .ns-eb-retry:hover {

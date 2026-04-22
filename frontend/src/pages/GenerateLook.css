@@ -59,11 +59,13 @@
   outline: none;
   width: 100%;
   box-sizing: border-box;
+  transition: border-color var(--ns-transition-fast), box-shadow var(--ns-transition-fast);
 }
 
 .gl-select:focus,
 .gl-input:focus {
   border-color: var(--ns-accent);
+  box-shadow: 0 0 0 1px var(--ns-accent);
 }
 
 .gl-textarea {
@@ -79,10 +81,12 @@
   box-sizing: border-box;
   resize: vertical;
   min-height: 72px;
+  transition: border-color var(--ns-transition-fast), box-shadow var(--ns-transition-fast);
 }
 
 .gl-textarea:focus {
   border-color: var(--ns-accent);
+  box-shadow: 0 0 0 1px var(--ns-accent);
 }
 
 /* ---- Weather pill buttons ---- */
@@ -104,12 +108,13 @@
   padding: 0.35rem 0.85rem;
   cursor: pointer;
   color: var(--ns-ink);
-  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast), filter var(--ns-transition-fast);
 }
 
 .gl-pill:hover {
-  border-color: var(--ns-accent);
-  color: var(--ns-accent);
+  background: var(--ns-ink);
+  border-color: var(--ns-ink);
+  color: var(--ns-bg-alt);
 }
 
 .gl-pill--active {
@@ -119,9 +124,10 @@
 }
 
 .gl-pill--active:hover {
-  background: var(--ns-accent);
-  border-color: var(--ns-accent);
+  background: var(--ns-ink);
+  border-color: var(--ns-ink);
   color: var(--ns-bg-alt);
+  filter: brightness(1.08);
 }
 
 /* ---- Vibe chips ---- */
@@ -142,12 +148,13 @@
   padding: 0.25rem 0.6rem;
   cursor: pointer;
   color: var(--ns-ink-muted);
-  transition: border-color 0.1s, color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast), filter var(--ns-transition-fast);
 }
 
 .gl-chip:hover {
-  border-color: var(--ns-accent);
-  color: var(--ns-ink);
+  background: var(--ns-ink);
+  border-color: var(--ns-ink);
+  color: var(--ns-bg-alt);
 }
 
 /* ---- Submit ---- */
@@ -223,6 +230,27 @@
   border-left: var(--ns-border-heavy) solid var(--ns-accent);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .gl-result-summary {
+    position: relative;
+    overflow: hidden;
+    border-left-color: transparent;
+  }
+
+  .gl-result-summary::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--ns-border-heavy);
+    height: 100%;
+    background: var(--ns-accent);
+    transform: scaleY(0);
+    transform-origin: top;
+    animation: ns-accent-rail-reveal var(--ns-transition-slow) forwards;
+  }
+}
+
 /* No-wardrobe inline note */
 .gl-no-wardrobe-note {
   background: var(--ns-bg);
@@ -262,6 +290,7 @@
   color: var(--ns-ink);
   text-decoration: underline;
   text-underline-offset: 2px;
+  transition: color var(--ns-transition-fast);
 }
 
 .gl-no-wardrobe-link:hover { color: var(--ns-accent); }

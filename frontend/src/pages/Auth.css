@@ -64,7 +64,7 @@
   color: var(--ns-ink);
   background: var(--ns-bg-alt);
   outline: none;
-  transition: border-color 0.1s;
+  transition: border-color var(--ns-transition-fast), box-shadow var(--ns-transition-fast);
 }
 
 .auth-form input::placeholder {
@@ -75,7 +75,8 @@
 
 .auth-form input:focus {
   border-color: var(--ns-border);
-  box-shadow: none;
+  border-color: var(--ns-accent);
+  box-shadow: 0 0 0 1px var(--ns-accent);
 }
 
 .auth-error {
@@ -111,6 +112,7 @@
   color: var(--ns-ink);
   font-weight: 500;
   text-decoration: underline;
+  transition: color var(--ns-transition-fast);
 }
 
 .auth-switch a:hover {
@@ -131,6 +133,7 @@
   text-decoration: underline;
   text-transform: uppercase;
   margin-top: -0.15rem;
+  transition: color var(--ns-transition-fast);
 }
 
 .auth-forgot-btn:hover {

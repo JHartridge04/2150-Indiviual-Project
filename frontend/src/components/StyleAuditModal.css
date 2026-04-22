@@ -12,6 +12,13 @@
   overflow-y: auto;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .sam-overlay {
+    opacity: 0;
+    animation: ns-modal-backdrop-in var(--ns-transition-medium) forwards;
+  }
+}
+
 .sam-modal {
   background: var(--ns-bg-alt);
   border: var(--ns-border-heavy) solid var(--ns-border);
@@ -21,6 +28,14 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sam-modal {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: ns-modal-panel-in var(--ns-transition-medium) forwards;
+  }
 }
 
 .sam-close {
@@ -74,6 +89,7 @@
 .sam-too-few a {
   color: var(--ns-accent);
   text-decoration: none;
+  transition: color var(--ns-transition-fast);
 }
 
 .sam-too-few a:hover {
@@ -115,6 +131,27 @@
   padding: 0.75rem 1rem;
   background: var(--ns-bg);
   border-left: var(--ns-border-heavy) solid var(--ns-accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sam-summary {
+    position: relative;
+    overflow: hidden;
+    border-left-color: transparent;
+  }
+
+  .sam-summary::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--ns-border-heavy);
+    height: 100%;
+    background: var(--ns-accent);
+    transform: scaleY(0);
+    transform-origin: top;
+    animation: ns-accent-rail-reveal var(--ns-transition-slow) forwards;
+  }
 }
 
 /* ---- Sections ---- */
@@ -343,7 +380,14 @@
   top: 0;
   height: 100%;
   background: var(--ns-accent);
-  transition: width 0.3s;
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sam-gate-fill {
+    transform: scaleX(0);
+    animation: ns-accent-bar-reveal var(--ns-transition-slow) forwards;
+  }
 }
 
 .sam-gate-remaining {
@@ -368,7 +412,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: background 0.1s, border-color 0.1s;
+  transition: background-color var(--ns-transition-fast), color var(--ns-transition-fast), border-color var(--ns-transition-fast);
 }
 
 .sam-gate-cta:hover {

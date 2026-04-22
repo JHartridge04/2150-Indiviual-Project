@@ -87,13 +87,13 @@
   background: var(--ns-bg-alt);
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 0.1s;
+  transition: border-color var(--ns-transition-fast), box-shadow var(--ns-transition-fast);
 }
 
 .field-input:focus {
   outline: none;
-  border-color: var(--ns-border);
-  box-shadow: none;
+  border-color: var(--ns-accent);
+  box-shadow: 0 0 0 1px var(--ns-accent);
 }
 
 .field-input::placeholder {
@@ -113,11 +113,12 @@
   padding: 0.4rem 0.6rem;
   min-height: 42px;
   background: var(--ns-bg-alt);
-  transition: border-color 0.1s;
+  transition: border-color var(--ns-transition-fast), box-shadow var(--ns-transition-fast);
 }
 
 .chip-wrap:focus-within {
-  border-color: var(--ns-border);
+  border-color: var(--ns-accent);
+  box-shadow: 0 0 0 1px var(--ns-accent);
 }
 
 .chip {
@@ -134,6 +135,11 @@
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  transition: filter var(--ns-transition-fast);
+}
+
+.chip:hover {
+  filter: brightness(1.08);
 }
 
 .chip-remove {
@@ -145,6 +151,7 @@
   line-height: 1;
   padding: 0;
   opacity: 0.7;
+  transition: color var(--ns-transition-fast), opacity var(--ns-transition-fast);
 }
 
 .chip-remove:hover {

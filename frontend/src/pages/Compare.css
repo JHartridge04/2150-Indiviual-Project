@@ -144,11 +144,13 @@
   padding: 0.45rem 0.75rem;
   color: var(--ns-ink);
   outline: none;
+  transition: border-color var(--ns-transition-fast), box-shadow var(--ns-transition-fast);
 }
 
 .compare-occasion-select:focus,
 .compare-occasion-custom:focus {
   border-color: var(--ns-accent);
+  box-shadow: 0 0 0 1px var(--ns-accent);
 }
 
 .compare-occasion-custom {
@@ -234,6 +236,27 @@
 
 .compare-result-card--winner {
   border-top-color: var(--ns-accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .compare-result-card--winner {
+    position: relative;
+    overflow: hidden;
+    border-top-color: transparent;
+  }
+
+  .compare-result-card--winner::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--ns-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: ns-accent-bar-reveal var(--ns-transition-slow) forwards;
+  }
 }
 
 .compare-result-card-label {

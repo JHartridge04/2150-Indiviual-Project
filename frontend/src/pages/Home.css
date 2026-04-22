@@ -82,6 +82,7 @@
 }
 
 .upload-zone {
+  position: relative;
   width: 100%;
   max-width: 420px;
   border: var(--ns-border-width) dashed var(--ns-border);
@@ -112,13 +113,45 @@
   background-position: left top, left top;
   background-size: 6px 10px, 10px 50px;
   background-repeat: repeat-y, repeat-y;
-  transition: border-color 0.1s;
+    transition: border-color var(--ns-transition-medium);
+  }
+
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 10px;
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        var(--ns-accent) 0,
+        var(--ns-accent) 1px,
+        transparent 1px,
+        transparent 10px
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        var(--ns-accent) 0,
+        var(--ns-accent) 1px,
+        transparent 1px,
+        transparent 50px
+      );
+    background-position: left top, left top;
+    background-size: 6px 10px, 10px 50px;
+    background-repeat: repeat-y, repeat-y;
+    opacity: 0;
+    transition: opacity var(--ns-transition-medium);
+    pointer-events: none;
 }
 
 .upload-zone:hover {
   border-color: var(--ns-accent);
   border-style: solid;
 }
+
+  .upload-zone:hover::before {
+    opacity: 1;
+  }
 
 .upload-placeholder {
   display: flex;

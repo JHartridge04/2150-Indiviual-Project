@@ -1,0 +1,78 @@
+:root {
+  --ns-transition-fast: 100ms linear;
+  --ns-transition-medium: 180ms ease-out;
+  --ns-transition-slow: 250ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes ns-modal-backdrop-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes ns-modal-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ns-title-card-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes ns-accent-bar-reveal {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes ns-accent-rail-reveal {
+    from {
+      transform: scaleY(0);
+    }
+
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  @keyframes ns-skeleton-shimmer {
+    from {
+      transform: translateX(-120%);
+    }
+
+    to {
+      transform: translateX(120%);
+    }
+  }
+}

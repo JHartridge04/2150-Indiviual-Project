@@ -4,12 +4,12 @@
   position: relative;
   background: var(--ns-bg-alt);
   border: var(--ns-border-width) solid var(--ns-border);
-  border-top: 3px solid transparent;
+  border-top: 3px solid var(--ns-border-subtle);
   border-radius: var(--ns-radius);
   cursor: pointer;
   padding: 0;
   overflow: hidden;
-  transition: border-top-color 0.1s, transform 0.1s;
+  transition: transform var(--ns-transition-medium), border-top-color var(--ns-transition-medium);
   text-align: left;
   width: 100%;
 }
@@ -74,7 +74,7 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.1s, background 0.1s;
+  transition: opacity var(--ns-transition-fast), background-color var(--ns-transition-fast), border-color var(--ns-transition-fast);
   padding: 0;
 }
 
